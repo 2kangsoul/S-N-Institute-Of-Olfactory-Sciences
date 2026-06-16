@@ -2,7 +2,7 @@
 /* eslint-disable */
 
 import React, { useState, useEffect } from "react";
-import backendlessApi from "./../config/api";
+import apiClient from "./../config/api"; // UPDATE: Menggunakan apiClient
 import {
   ResponsiveContainer,
   LineChart,
@@ -51,35 +51,30 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        // UPDATE: Menggunakan apiClient dan endpoint Express
         const [transactionsRes, blogsRes, trafficRes] = await Promise.all([
-          backendlessApi.get("data/Transactions"),
-          backendlessApi.get("data/Blogs"),
-          backendlessApi.get("data/Traffic"),
+          apiClient.get("/transactions"),
+          apiClient.get("/blogs"),
+          apiClient.get("/traffic"),
         ]);
 
-        const rawTransactions = transactionsRes.data;
-        const rawBlogs = blogsRes.data;
-
-        const groupedSales = rawTransactions.reduce((acc: any, curr: any) => {
-          const date = new Date(curr.created);
-          const month = date.toLocaleString("id-ID", { month: "short" });
-          if (!acc[month]) acc[month] = 0;
-          acc[month] += curr.total_amount || 0;
-          return acc;
-        }, {});
+        // UPDATE: Mengambil data dari res.data.data
+        const rawTransactions = transactionsRes.data.data || [];
+        const rawBlogs = blogsRes.data.data || [];
+        const rawTraffic = trafficRes.data.data || [];
 
         const formattedBlogs = rawBlogs
           .map((blog: any) => ({
             artikel: blog.title || "Tanpa Judul",
             likes: blog.likes || 0,
-            created: blog.created,
+            created: blog.createdAt || blog.created,
           }))
           .sort((a: any, b: any) => b.likes - a.likes)
           .slice(0, 5);
 
         setDataPenjualan(rawTransactions);
         setDataBlog(formattedBlogs);
-        setDataTraffic(trafficRes.data);
+        setDataTraffic(rawTraffic);
       } catch (error) {
         console.error("Gagal mengambil data:", error);
       } finally {
@@ -122,7 +117,7 @@ const Dashboard = () => {
   }, []);
 
   const chartPenjualan = dataPenjualan.reduce((acc: any, curr: any) => {
-    const date = new Date(curr.created);
+    const date = new Date(curr.createdAt || curr.created);
     const month = date.toLocaleString("id-ID", { month: "short" });
     if (!acc[month]) acc[month] = 0;
     acc[month] += curr.total_amount || 0;
@@ -170,7 +165,6 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* 4 KOTAK DENGAN BACKGROUND PUTIH & TEKS HITAM */}
       <div
         className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
         style={{

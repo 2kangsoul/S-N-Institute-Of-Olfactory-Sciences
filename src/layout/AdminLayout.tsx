@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useAuthStore } from "../stores/useAuthStore";
+import { Navigate } from "react-router-dom";
 import {
   Menu,
   LayoutDashboard,
@@ -8,7 +10,7 @@ import {
   Search,
   Bell,
   User,
-  Home
+  Home,
 } from "lucide-react";
 
 interface AdminLayoutProps {
@@ -16,7 +18,12 @@ interface AdminLayoutProps {
 }
 
 const AdminLayout = ({ children }: AdminLayoutProps) => {
+  const { isAuthenticated, user } = useAuthStore();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  if (!isAuthenticated || (user?.role !== "admin" && user?.role !== "owner")) {
+    return <Navigate to="/" replace />;
+  }
 
   const menuItems = [
     { title: "Dashboard", icon: <LayoutDashboard size={20} /> },
@@ -26,7 +33,6 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
 
   return (
     <div className="min-h-screen bg-gray-100 flex">
-      {/* MOBILE OVERLAY */}
       {sidebarOpen && (
         <div
           className="fixed inset-0 bg-black/50 z-40 md:hidden"
@@ -34,7 +40,6 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
         />
       )}
 
-      {/* SIDEBAR */}
       <aside
         className={`
           fixed md:static top-0 left-0 h-screen w-64 bg-white shadow-md z-50
@@ -62,37 +67,37 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
         </nav>
       </aside>
 
-      {/* MAIN AREA */}
       <div className="flex-1 flex flex-col relative w-full min-h-screen">
         <div className="absolute top-0 left-0 w-full h-80 bg-gradient-to-r from-blue-600 to-indigo-700 z-0"></div>
 
-        {/* HEADER */}
         <header className="relative z-10 h-16 flex items-center justify-between px-6 text-white">
           <div className="flex items-center">
-            <button className="md:hidden mr-4" onClick={() => setSidebarOpen(true)}>
+            <button
+              className="md:hidden mr-4"
+              onClick={() => setSidebarOpen(true)}
+            >
               <Menu size={24} />
             </button>
-            
-            {/* LOGO RUMAH DENGAN POINTER & CLICK EVENT */}
-            <h2 
+            <h2
               className="text-lg font-semibold flex items-center gap-2 cursor-pointer hover:text-gray-200 transition"
-              onClick={() => window.location.href = '/'}
+              onClick={() => (window.location.href = "/")}
             >
               <Home size={18} /> Dashboard
             </h2>
           </div>
 
           <div className="flex items-center gap-4">
-            {/* Search Box */}
             <div className="hidden md:flex bg-white/20 rounded-full px-4 py-1 items-center border border-white/20">
               <Search size={16} className="text-white mr-2" />
-              <input type="text" placeholder="Search..." className="bg-transparent outline-none text-sm placeholder-white/70 w-32" />
+              <input
+                type="text"
+                placeholder="Search..."
+                className="bg-transparent outline-none text-sm placeholder-white/70 w-32"
+              />
             </div>
-            
-            {/* Notifikasi */}
-            <button className="hover:text-gray-200"><Bell size={20} /></button>
-            
-            {/* Profil */}
+            <button className="hover:text-gray-200">
+              <Bell size={20} />
+            </button>
             <div className="flex items-center gap-2 bg-white/20 p-1.5 rounded-full pl-3">
               <span className="text-sm font-medium">Admin</span>
               <div className="w-8 h-8 rounded-full bg-white text-blue-600 flex items-center justify-center">
@@ -102,7 +107,6 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
           </div>
         </header>
 
-        {/* CONTENT */}
         <main className="relative z-10 flex-1 p-6 overflow-auto">
           {children}
         </main>

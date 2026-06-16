@@ -6,7 +6,7 @@ import { useAuthStore } from "./stores/useAuthStore"; // ← tambahkan
 // Import Layout
 import AuthLayout from "./layout/AuthLayout";
 import MainLayout from "./Features/header/component/MainLayout";
-import AdminLayout from "./layout/AdminLayout"; 
+import AdminLayout from "./layout/AdminLayout";
 
 // Import Halaman
 import Home from "./Features/landingpages/components/Home";
@@ -18,7 +18,7 @@ import ChatBot from "./Features/chatbot/Components/ChatBot";
 import NicheGuide from "./page/niche";
 import AboutUs from "./page/AboutUs";
 import NotFound from "./page/NotFound";
-import Dashboard from "../src/page/Dashboard"; 
+import Dashboard from "./page/Dashboard";
 
 function App() {
   const { fetchCurrentUser } = useAuthStore(); // ← tambahkan

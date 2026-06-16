@@ -1,308 +1,173 @@
-// @ts-nocheck
-/* eslint-disable */
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { Navigate } from "react-router-dom";
+import toast from "react-hot-toast";
+import { useAuthStore } from "../stores/useAuthStore";
+import apiClient from "../config/api"; // UPDATE: Menggunakan apiClient
 
-import React, { useState, useEffect } from "react";
-import apiClient from "./../config/api"; // UPDATE: Menggunakan apiClient
-import {
-  ResponsiveContainer,
-  LineChart,
-  Line,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-} from "recharts";
+const loginSchema = z.object({
+  email: z
+    .string()
+    .min(1, { message: "Email tidak boleh kosong" })
+    .email({ message: "Format email tidak valid" }),
+  password: z.string().min(6, { message: "Password minimal harus 6 karakter" }),
+  rememberMe: z.boolean().optional(),
+});
 
-const Dashboard = () => {
-  const [dataPenjualan, setDataPenjualan] = useState<any[]>([]);
-  const [dataBlog, setDataBlog] = useState<any[]>([]);
-  const [dataTraffic, setDataTraffic] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [timeLeft, setTimeLeft] = useState("");
+type LoginFormInputs = z.infer<typeof loginSchema>;
 
-  // Logika hitung persentase kenaikan/penurunan
-  const calculatePercentage = (currentData: any[]) => {
-    if (!currentData || currentData.length === 0) {
-      return { val: "0.0", color: "text-gray-400", icon: "-" };
+export default function LoginPage() {
+  const [showPassword, setShowPassword] = useState(false);
+
+  // Panggil setAuth DAN isAuthenticated dari Zustand
+  const { setAuth, isAuthenticated } = useAuthStore();
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<LoginFormInputs>({
+    resolver: zodResolver(loginSchema),
+  });
+
+  const onSubmit = async (data: LoginFormInputs) => {
+    try {
+      // UPDATE: Endpoint disesuaikan untuk Express.js
+      const res = await apiClient.post("/auth/login", {
+        emailOrUsername: data.email,
+        password: data.password,
+      });
+
+      toast.success("Login successfully");
+
+      // UPDATE: Menyesuaikan pengambilan data dari format Express (res.data.data)
+      const userData = res.data.data;
+      const userRole = userData?.role || "user";
+
+      setAuth({
+        name: userData?.fullName || data.email.split("@")[0],
+        email: userData?.email,
+        objectId: userData?.id, // ID dari MongoDB/Postgres
+        userToken: res.data.token, // Token dari Express
+        role: userRole,
+        profilePic: userData?.profilePic || "",
+      });
+
+      // Pindah ke halaman utama dan MELAKUKAN FULL REFRESH
+      if (userRole === "admin" || userRole === "owner") {
+        window.location.href = "/admin";
+      } else {
+        window.location.href = "/";
+      }
+    } catch (error: any) {
+      console.error("Login gagal", error);
+      toast.error(
+        error.response?.data?.message ||
+          "Gagal login, periksa kembali email & password Anda",
+      );
     }
-
-    const now = new Date().getTime();
-    const sixHoursAgo = now - 6 * 60 * 60 * 1000;
-
-    const recent = currentData.filter(
-      (item) => item.created && new Date(item.created).getTime() > sixHoursAgo,
-    ).length;
-    const old = currentData.length - recent;
-
-    if (old === 0) return { val: "100.0", color: "text-green-600", icon: "↑" };
-
-    const diff = (recent / old) * 100;
-
-    return {
-      val: diff.toFixed(1),
-      color: diff > 0 ? "text-green-600" : "text-gray-500",
-      icon: diff > 0 ? "↑" : "-",
-    };
   };
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        // UPDATE: Menggunakan apiClient dan endpoint disesuaikan ke rute Express.js
-        const [transactionsRes, blogsRes, trafficRes] = await Promise.all([
-          apiClient.get("/transactions"),
-          apiClient.get("/blogs"),
-          apiClient.get("/traffic"),
-        ]);
-
-        // UPDATE: Mengambil array datanya dari .data.data (format response Express kamu) atau fallback ke .data
-        const rawTransactions = transactionsRes.data.data || transactionsRes.data;
-        const rawBlogs = blogsRes.data.data || blogsRes.data;
-        const rawTraffic = trafficRes.data.data || trafficRes.data;
-
-        const groupedSales = rawTransactions.reduce((acc: any, curr: any) => {
-          const date = new Date(curr.created);
-          const month = date.toLocaleString("id-ID", { month: "short" });
-          if (!acc[month]) acc[month] = 0;
-          acc[month] += curr.total_amount || 0;
-          return acc;
-        }, {});
-
-        const formattedBlogs = rawBlogs
-          .map((blog: any) => ({
-            artikel: blog.title || "Tanpa Judul",
-            likes: blog.likes || 0,
-            created: blog.created,
-          }))
-          .sort((a: any, b: any) => b.likes - a.likes)
-          .slice(0, 5);
-
-        setDataPenjualan(rawTransactions);
-        setDataBlog(formattedBlogs);
-        setDataTraffic(rawTraffic); // UPDATE: Gunakan rawTraffic yang sudah disesuaikan
-      } catch (error) {
-        console.error("Gagal mengambil data:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchData();
-
-    let targetTime = localStorage.getItem("targetTime");
-    if (!targetTime) {
-      targetTime = (new Date().getTime() + 6 * 60 * 60 * 1000).toString();
-      localStorage.setItem("targetTime", targetTime);
-    }
-
-    const timer = setInterval(() => {
-      const now = new Date().getTime();
-      const distance = parseInt(targetTime!) - now;
-
-      if (distance < 0) {
-        const newTarget = (
-          new Date().getTime() +
-          6 * 60 * 60 * 1000
-        ).toString();
-        localStorage.setItem("targetTime", newTarget);
-        window.location.reload();
-        return;
-      }
-
-      const h = Math.floor(
-        (distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60),
-      );
-      const m = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-      const s = Math.floor((distance % (1000 * 60)) / 1000);
-
-      setTimeLeft(`${h}j ${m}m ${s}d`);
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, []);
-
-  const chartPenjualan = dataPenjualan.reduce((acc: any, curr: any) => {
-    const date = new Date(curr.created);
-    const month = date.toLocaleString("id-ID", { month: "short" });
-    if (!acc[month]) acc[month] = 0;
-    acc[month] += curr.total_amount || 0;
-    return acc;
-  }, {});
-  const dataChartPenjualan = Object.keys(chartPenjualan).map((key) => ({
-    bulan: key,
-    penjualan: chartPenjualan[key],
-  }));
-
-  const totalTransaksi = dataPenjualan.reduce(
-    (sum, item) => sum + (item.total_amount || 0),
-    0,
-  );
-  const indArtikel = calculatePercentage(dataBlog);
-  const indTraffic = calculatePercentage(dataTraffic);
-
-  const totalTraffic = dataTraffic.length;
-  const totalTransaksiCount = dataPenjualan.length;
-  const totalLikes = dataBlog.reduce((sum, item) => sum + (item.likes || 0), 0);
-
-  const conversionRate =
-    totalTraffic > 0
-      ? ((totalTransaksiCount / totalTraffic) * 100).toFixed(1)
-      : "0.0";
-  const engagementRate =
-    totalTraffic > 0 ? ((totalLikes / totalTraffic) * 100).toFixed(1) : "0.0";
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-[500px]">
-        <div className="w-12 h-12 border-4 border-white border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
+  if (isAuthenticated) {
+    return <Navigate to="/" replace />;
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-3xl font-bold text-white drop-shadow-md">
-          Dashboard Overview
-        </h1>
-        <div className="text-sm font-mono bg-white/20 text-white border border-white/30 px-4 py-1.5 rounded-full shadow-sm">
-          Next update: {timeLeft}
-        </div>
-      </div>
+    <div className="flex min-h-screen items-center justify-center bg-[#FAFAFA] dark:bg-[#161722] px-4 transition-colors duration-300">
+      <div className="w-full max-w-md rounded-2xl bg-white dark:bg-[#25273D] p-8 shadow-xl border border-gray-100 dark:border-gray-800">
+        <h2 className="mb-2 text-center text-3xl font-bold text-gray-800 dark:text-white">
+          Welcome Back
+        </h2>
+        <p className="mb-8 text-center text-sm text-gray-500 dark:text-gray-400">
+          Silakan masuk untuk menjelajahi koleksi kami
+        </p>
 
-      {/* 4 KOTAK DENGAN BACKGROUND PUTIH & TEKS HITAM */}
-      <div
-        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
-        style={{
-          fontFamily: '"Arimo", sans-serif',
-          fontSize: "1.3rem",
-          fontWeight: "bold",
-        }}
-      >
-        <div className="bg-white text-black rounded-xl shadow-lg p-6 hover:-translate-y-1 transition-transform duration-300">
-          <p className="text-md opacity-70">Total Like</p>
-          <h2 className="text-4xl font-bold mt-2">{totalLikes}</h2>
-          <p className={`text-sm mt-2 font-bold ${indArtikel.color}`}>
-            {indArtikel.icon} {indArtikel.val}%
-          </p>
-        </div>
-
-        <div className="bg-white text-black rounded-xl shadow-lg p-6 hover:-translate-y-1 transition-transform duration-300">
-          <p className="text-md opacity-70">Traffic</p>
-          <h2 className="text-4xl font-bold mt-2">{dataTraffic.length}</h2>
-          <p className={`text-sm mt-2 font-bold ${indTraffic.color}`}>
-            {indTraffic.icon} {indTraffic.val}%
-          </p>
-        </div>
-
-        <div className="bg-white text-black rounded-xl shadow-lg p-6 hover:-translate-y-1 transition-transform duration-300">
-          <p className="text-md opacity-70">Total Transaksi</p>
-          <h2 className="text-2xl md:text-2xl lg:text-xl xl:text-2xl font-bold mt-2 truncate">
-            {totalTransaksi.toLocaleString("id-ID", {
-              style: "currency",
-              currency: "IDR",
-            })}
-          </h2>
-        </div>
-
-        <div className="bg-white text-black rounded-xl shadow-lg p-6 flex flex-col justify-center hover:-translate-y-1 transition-transform duration-300">
-          <p className="text-md opacity-70 mb-2">Performance</p>
-          <div className="space-y-2">
-            <div className="flex justify-between items-center border-b border-gray-200 pb-1">
-              <span className="text-xs opacity-70">Konversi:</span>
-              <span className="text-lg font-bold">{conversionRate}%</span>
-            </div>
-            <div className="flex justify-between items-center pt-1">
-              <span className="text-xs opacity-70">Interaksi:</span>
-              <span className="text-lg font-bold">{engagementRate}%</span>
-            </div>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+          {/* Input Email */}
+          <div>
+            <label className="mb-1.5 block text-sm font-semibold text-gray-700 dark:text-gray-300">
+              Email
+            </label>
+            <input
+              type="text"
+              {...register("email")}
+              placeholder="user@gmail.com"
+              className={`w-full rounded-xl border bg-transparent px-4 py-3 text-sm text-gray-800 dark:text-white focus:outline-none focus:ring-2 ${
+                errors.email
+                  ? "border-red-500 focus:ring-red-200"
+                  : "border-gray-300 focus:border-blue-500 focus:ring-blue-200"
+              } transition-all`}
+            />
+            {errors.email && (
+              <p className="mt-1.5 text-xs font-medium text-red-500">
+                {errors.email.message}
+              </p>
+            )}
           </div>
-        </div>
-      </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
-        <div className="lg:col-span-2 bg-slate-800 rounded-xl shadow-lg p-6">
-          <h2 className="text-xl font-bold mb-6 text-white">
-            Statistik Pendapatan per Bulan
-          </h2>
-          <ResponsiveContainer width="100%" height={350}>
-            <LineChart data={dataChartPenjualan}>
-              <CartesianGrid
-                strokeDasharray="3 3"
-                stroke="#374151"
-                vertical={false}
+          {/* Input Password */}
+          <div>
+            <label className="mb-1.5 block text-sm font-semibold text-gray-700 dark:text-gray-300">
+              Password
+            </label>
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                {...register("password")}
+                placeholder="....................."
+                className={`w-full rounded-xl border bg-transparent px-4 py-3 pr-12 text-sm text-gray-800 dark:text-white focus:outline-none focus:ring-2 ${
+                  errors.password
+                    ? "border-red-500 focus:ring-red-200"
+                    : "border-gray-300 focus:border-blue-500 focus:ring-blue-200"
+                } transition-all`}
               />
-              <XAxis dataKey="bulan" stroke="#9ca3af" />
-              <YAxis stroke="#9ca3af" />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: "#1f2937",
-                  borderColor: "#374151",
-                  color: "#fff",
-                  borderRadius: "8px",
-                }}
-                formatter={(value: any) =>
-                  `Rp ${Number(value).toLocaleString("id-ID")}`
-                }
-              />
-              <Legend wrapperStyle={{ color: "#9ca3af" }} />
-              <Line
-                type="monotone"
-                dataKey="penjualan"
-                stroke="#3b82f6"
-                strokeWidth={4}
-                dot={{ r: 4, fill: "#3b82f6" }}
-                activeDot={{ r: 8 }}
-                name="Total Pendapatan"
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute inset-y-0 right-0 flex items-center pr-4 text-gray-500 hover:text-gray-700"
+              >
+                {showPassword ? "Hide" : "Show"}
+              </button>
+            </div>
+            {errors.password && (
+              <p className="mt-1.5 text-xs font-medium text-red-500">
+                {errors.password.message}
+              </p>
+            )}
+          </div>
 
-        <div className="lg:col-span-1 bg-white rounded-xl shadow-lg p-6">
-          <h2 className="text-xl font-bold mb-6 text-gray-800">Top Artikel</h2>
-          <ResponsiveContainer width="100%" height={350}>
-            <BarChart
-              data={dataBlog}
-              margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+          {/* Remember Me */}
+          <div className="flex items-center justify-between mt-2">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                {...register("rememberMe")}
+                className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+              />
+              <span className="text-sm text-gray-600 dark:text-gray-400">
+                Remember me
+              </span>
+            </label>
+            <a
+              href="#"
+              className="text-sm font-semibold text-blue-600 hover:text-blue-500"
             >
-              <CartesianGrid
-                strokeDasharray="3 3"
-                vertical={false}
-                stroke="#e5e7eb"
-              />
-              <XAxis
-                dataKey="artikel"
-                tick={{ fontSize: 12, fill: "#6b7280" }}
-                tickFormatter={(val) =>
-                  val.length > 8 ? val.substring(0, 8) + "..." : val
-                }
-              />
-              <YAxis tick={{ fontSize: 12, fill: "#6b7280" }} />
-              <Tooltip
-                contentStyle={{
-                  borderRadius: "8px",
-                  border: "none",
-                  boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
-                }}
-              />
-              <Legend />
-              <Bar
-                dataKey="likes"
-                fill="#f97316"
-                name="Jumlah Like"
-                radius={[4, 4, 0, 0]}
-                barSize={40}
-              />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
+              Lupa Password?
+            </a>
+          </div>
+
+          {/* Tombol Login */}
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="mt-6 w-full rounded-xl bg-gray-900 px-4 py-3 text-sm font-bold text-white shadow-lg transition-all hover:bg-black focus:outline-none focus:ring-4 focus:ring-gray-300 disabled:opacity-50"
+          >
+            {isSubmitting ? "Memproses..." : "Sign In"}
+          </button>
+        </form>
       </div>
     </div>
   );
-};
-
-export default Dashboard;
+}
