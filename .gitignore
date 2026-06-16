@@ -29,3 +29,6 @@ export.cjs
 user.json
 Product_export.json
 Blogs_export.json
+.env
+.env.local
+.env.*
