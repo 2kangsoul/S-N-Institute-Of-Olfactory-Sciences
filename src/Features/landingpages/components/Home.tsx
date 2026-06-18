@@ -54,9 +54,9 @@ const Home = () => {
           src={heroBackground}
           alt="S&N Institute of Olfactory Sciences"
           /* Diubah: Dikembalikan ke object-cover agar memenuhi seluruh background tanpa ruang kosong */
-            // className="absolute inset-0 w-full h-full object-contain"
-          
-          className="absolute inset-0 w-full h-full object-cover"
+          // className="absolute inset-0 w-full h-full object-contain"
+
+          className="absolute inset-0 w-full h-full object-cover overflow-hidden"
         />
         <div className="absolute inset-0 bg-gradient-to-b from-black/40 to-[#050505]/90" />
         <div className="relative z-10 px-6 text-center max-w-3xl">
