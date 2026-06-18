@@ -1,146 +1,211 @@
-import Hero from "./Hero";
-import heroBackground from "../../../assets/Logo.png"; // Sesuaikan jalur foldernya jika bergeser
-import CompanyOverview from "./CompanyOverview";
-import AromaCard from "./aromas";
+import { useEffect } from "react";
+import heroBackground from "../../../assets/Logo.png"; // Ganti ke foto hero gelap kamu jika ada
 import { aromasData } from "../types/aromasData";
-import TestimonialCard from "./TestimonialCard";
 import { testimonialsData } from "../types/testimonialsData";
 import { Link } from "react-router-dom";
 
 const Home = () => {
+  // Ambil satu testimonial untuk banner — data tidak diubah, hanya cara render-nya
+  const featuredTestimonial = testimonialsData[0];
+
+  // Fade-in saat elemen ber-class .reveal-on-scroll masuk ke viewport
+  useEffect(() => {
+    const els = document.querySelectorAll(".reveal-on-scroll");
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("is-visible");
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.15 },
+    );
+    els.forEach((el) => observer.observe(el));
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <>
+      {/* THEME: font + animasi (referensi L'Essence Violette) */}
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Manrope:wght@400;700&display=swap');
+        .ff-display { font-family: 'Playfair Display', serif; }
+        .ff-body { font-family: 'Manrope', system-ui, sans-serif; }
+        .reveal-on-scroll {
+          opacity: 0;
+          transform: translateY(24px);
+          transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+        }
+        .reveal-on-scroll.is-visible {
+          opacity: 1;
+          transform: none;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .reveal-on-scroll { opacity: 1; transform: none; transition: none; }
+        }
+      `}</style>
+
       {/* HERO SECTION */}
-      <Hero backgroundImage={heroBackground} />
-
-      {/* COMPANY OVERVIEW SECTION */}
-      <CompanyOverview />
-
-      {/* DUA GAMBAR FEATURED */}
-      <section className="relative w-full bg-[#f4f2ee] py-10 overflow-hidden">
-        <div className="absolute inset-0 z-0">
-          <div className="absolute inset-0 bg-gradient-to-r from-[#F58427]/19 via-[#f4f2ee]/70 to-transparent"></div>
+      {/* Diubah: Menggunakan h-screen agar full 1 layar penuh */}
+      <section className="relative w-full h-screen flex items-center justify-center overflow-hidden bg-[#050505]">
+        <img
+          src={heroBackground}
+          alt="S&N Institute of Olfactory Sciences"
+          /* Diubah: Dikembalikan ke object-cover agar memenuhi seluruh background tanpa ruang kosong */
+            // className="absolute inset-0 w-full h-full object-contain"
+          
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/40 to-[#050505]/90" />
+        <div className="relative z-10 px-6 text-center max-w-3xl">
+          <h1 className="ff-display text-4xl md:text-6xl text-[#e5e2e1] tracking-tight leading-tight drop-shadow-2xl">
+            S&N Institute of Olfactory Sciences
+          </h1>
+          <p className="ff-body mt-6 text-[#cdc3d6] text-xs md:text-sm uppercase tracking-[0.25em] font-light">
+            The intersection of molecular precision and artistic intuition.
+          </p>
+          <button className="ff-body mt-10 bg-[#d5bbff] text-[#270057] text-xs uppercase tracking-[0.2em] font-bold px-8 py-4 transition-all hover:scale-105 active:scale-95">
+            Explore the Science of Scent
+          </button>
         </div>
-        <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-[#f4f2ee] to-transparent z-0 pointer-events-none"></div>
-        <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[#f4f2ee] to-transparent z-0 pointer-events-none"></div>
+      </section>
 
-        <div className="relative z-10 max-w-4xl mx-auto px-6">
-          <div className="flex flex-col md:flex-row justify-center items-center gap-6">
+      {/* COMPANY OVERVIEW */}
+      <section className="w-full bg-[#131313] py-24">
+        <div className="max-w-2xl mx-auto px-6 text-center">
+          <p className="ff-body text-lg md:text-xl text-[#cdc3d6] leading-relaxed">
+            Founded on the intersection of molecular precision and artistic
+            intuition, the S&N Institute of Olfactory Sciences explores the
+            profound relationship between scent and the subconscious. We craft
+            molecular signatures that transcend traditional perfumery.
+          </p>
+        </div>
+      </section>
+
+      {/* SPLIT COLLECTION SECTION — blok teks + gambar (alternating / zig-zag) */}
+      <section className="w-full bg-[#131313] pb-24">
+        <div className="max-w-6xl mx-auto px-6 flex flex-col gap-10 md:gap-14">
+          {/* BARIS 1 — KIRI: teks penjelasan collection | KANAN: gambar Isolate 01 */}
+          <div className="reveal-on-scroll flex flex-col md:flex-row items-center gap-6 md:gap-10">
+            <div className="w-full md:w-2/3">
+              <h2 className="ff-display text-xl md:text-2xl text-[#e5e2e1] tracking-wide mb-3">
+                Niche Perfume
+              </h2>
+              <p className="ff-body text-sm text-[#cdc3d6] leading-relaxed mb-5 max-w-md">
+                Eksplorasi mahakarya parfum niche dengan komposisi aroma
+                kompleks dan performa beast mode.
+              </p>
+              <Link
+                to="/niche"
+                className="ff-body inline-block border border-[#e9c349] text-[#e9c349] text-[11px] uppercase tracking-[0.2em] px-6 py-2.5 transition-colors hover:bg-[#e9c349]/10"
+              >
+                Baca lebih lanjut
+              </Link>
+            </div>
+
             <Link
               to="/niche"
-              className="w-[350px] h-[220px] relative bg-black rounded-xl flex flex-col justify-center overflow-hidden shadow-lg transition-transform hover:-translate-y-1 duration-300 block group"
+              className="group relative block w-full md:w-1/3 aspect-[16/10] overflow-hidden border border-[#d5bbff]/10"
             >
               <img
                 src="/NichePerfume.png"
-                alt="Niche Perfume"
-                className="absolute inset-0 w-full h-full object-cover opacity-70 group-hover:opacity-60 transition-opacity duration-300"
+                alt="Collection"
+                className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
               />
-              <div className="absolute inset-0 bg-black/60 p-5 flex flex-col justify-end text-left">
-                {/* PERUBAHAN HANYA DI BARIS INI */}
-                <h3 className="text-xl md:text-2xl font-bold text-white mb-2 tracking-wide -translate-y-8 md:-translate-y-4">
-                  Niche Perfume
-                </h3>
-                <p className="mt-5 text-gray-200 text-xs leading-relaxed mb-4 translate-y-3">
-                  Eksplorasi mahakarya parfum niche dengan komposisi aroma
-                  kompleks dan performa beast mode.
+              <div className="absolute bottom-3 left-3 bg-black/50 backdrop-blur-sm border border-[#d5bbff]/20 px-3 py-1.5">
+                <p className="ff-body text-[10px] uppercase tracking-[0.25em] text-[#e9c349]">
+                  [ Isolate 01 ]
                 </p>
-                <div>
-                  <span className="inline-block bg-[#161616] hover:bg-black border border-gray-700 text-white text-sm font-bold px-4 py-2 rounded-xl transition-all shadow-md translate-y-3">
-                    Baca lebih lanjut
-                  </span>
-                </div>
               </div>
             </Link>
+          </div>
 
+          {/* BARIS 2 — KIRI: gambar Isolate 02 | KANAN: Current Isolates (diperkecil) */}
+          <div className="reveal-on-scroll flex flex-col md:flex-row items-start gap-6 md:gap-10">
             <Link
               to="/featured-2"
-              className="w-[350px] h-[220px] relative bg-black rounded-xl flex flex-col justify-center overflow-hidden shadow-lg transition-transform hover:-translate-y-1 duration-300 block group"
+              className="group relative block w-full md:w-1/3 aspect-[16/10] overflow-hidden border border-[#d5bbff]/10"
             >
               <img
                 src="/NichePerfume.png"
-                alt="Niche Perfume"
-                className="absolute inset-0 w-full h-full object-cover opacity-70 group-hover:opacity-60 transition-opacity duration-300"
+                alt="Collection"
+                className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
               />
-              <div className="absolute inset-0 bg-black/60 p-5 flex flex-col justify-end text-left">
-                {/* PERUBAHAN HANYA DI BARIS INI */}
-                <h3 className="text-xl md:text-2xl font-bold text-white mb-2 tracking-wide -translate-y-8 md:-translate-y-4">
-                  Designer Perfume
-                </h3>
-                <p className="mt-5 text-gray-200 text-xs leading-relaxed mb-4 translate-y-3">
-                  Temukan koleksi eksklusif mahakarya wewangian dengan karakter
-                  aroma yang unik, anti-pasaran.
+              <div className="absolute bottom-3 left-3 bg-black/50 backdrop-blur-sm border border-[#d5bbff]/20 px-3 py-1.5">
+                <p className="ff-body text-[10px] uppercase tracking-[0.25em] text-[#e9c349]">
+                  [ Isolate 02 ]
                 </p>
-                <div>
-                  <span className="inline-block bg-[#161616] hover:bg-black border border-gray-700 text-white text-sm font-bold px-4 py-2 rounded-xl transition-all shadow-md translate-y-3">
-                    Baca lebih lanjut
-                  </span>
-                </div>
               </div>
             </Link>
-          </div>
-        </div>
-      </section>
 
-      {/* CURATED AROMA DESCRIPTIONS */}
-      <section className="relative w-full bg-[#f4f2ee] py-12 overflow-hidden">
-        <div className="absolute inset-0 z-0">
-          <div className="absolute inset-0 bg-gradient-to-r from-[#F58427]/19 via-[#f4f2ee]/70 to-transparent"></div>
-        </div>
-        <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-[#f4f2ee] to-transparent z-0 pointer-events-none"></div>
+            <div className="w-full md:w-2/3">
+              <h2 className="ff-display text-xl md:text-2xl text-[#e5e2e1] tracking-wide mb-5">
+                Current Isolates
+              </h2>
 
-        <div className="relative z-10 max-w-5xl mx-auto px-6">
-          <div className="mb-12">
-            <h2 className="text-2xl font-bold mb-2">
-              Curated Aroma Descriptions
-            </h2>
-            <p className="text-gray-500">Experience the Essence of Saa</p>
-          </div>
+              <ul>
+                {aromasData.map((aroma) => (
+                  <li
+                    key={aroma.id}
+                    className="flex items-start justify-between gap-5 border-b border-[#4b4454] py-3"
+                  >
+                    <div className="min-w-0">
+                      <h3 className="ff-display text-base text-[#e5e2e1] mb-0.5">
+                        {aroma.name}
+                      </h3>
+                      <p className="ff-body text-[13px] text-[#968d9f] font-light leading-snug line-clamp-2">
+                        {aroma.desc}
+                      </p>
+                    </div>
+                    <span className="ff-body shrink-0 pt-0.5 text-[10px] uppercase tracking-[0.2em] text-[#e9c349]">
+                      [ 50 ML ]
+                    </span>
+                  </li>
+                ))}
+              </ul>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-12">
-            {aromasData.map((aroma) => (
-              <AromaCard
-                key={aroma.id}
-                id={aroma.id}
-                name={aroma.name}
-                desc={aroma.desc}
-                imageUrl={aroma.imageUrl}
-              />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* TESTIMONIAL SECTION */}
-      <section className="py-20 bg-[#f4f2ee] overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 md:px-8">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-12 text-center">
-            What They Say About Us
-          </h2>
-          <style>{`
-            @keyframes scroll { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
-            .animate-scroll { animation: scroll 40s linear infinite; }
-            .animate-scroll:hover { animation-play-state: paused; }
-          `}</style>
-          <div className="relative flex overflow-x-hidden group">
-            <div className="absolute top-0 bottom-0 left-0 w-16 md:w-32 z-10 bg-gradient-to-r from-[#f4f2ee] to-transparent pointer-events-none"></div>
-            <div className="absolute top-0 bottom-0 right-0 w-16 md:w-32 z-10 bg-gradient-to-l from-[#f4f2ee] to-transparent pointer-events-none"></div>
-            <div className="flex w-max animate-scroll items-center gap-6 py-4">
-              {[...testimonialsData, ...testimonialsData].map(
-                (testi, index) => (
-                  <TestimonialCard
-                    key={index}
-                    id={testi.id}
-                    name={testi.name}
-                    role={testi.role}
-                    text={testi.text}
-                    avatar={testi.avatar}
-                  />
-                ),
-              )}
+              <button className="ff-body mt-7 border border-[#e9c349] text-[#e9c349] text-[11px] uppercase tracking-[0.2em] px-7 py-2.5 transition-colors hover:bg-[#e9c349]/10">
+                View Complete Catalog
+              </button>
             </div>
           </div>
         </div>
       </section>
+
+      {/* SLEEK REVIEW BANNER */}
+      <section className="w-full bg-[#131313] pb-24">
+        <div className="max-w-4xl mx-auto px-6">
+          <div className="border border-[#d5bbff]/20 bg-[#0e0e0e] px-8 py-14 md:px-16 md:py-16 text-center">
+            <span className="ff-display block text-5xl leading-none text-[#d5bbff]/40 mb-4">
+              &ldquo;
+            </span>
+            <blockquote className="ff-display italic text-xl md:text-2xl text-[#cdc3d6] leading-relaxed max-w-2xl mx-auto">
+              {featuredTestimonial?.text}
+            </blockquote>
+            <p className="ff-body mt-8 text-xs uppercase tracking-[0.25em] text-[#e9c349]">
+              {featuredTestimonial?.name}
+              {featuredTestimonial?.role
+                ? ` — ${featuredTestimonial.role}`
+                : ""}
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* FOOTER */}
+      <footer className="w-full bg-[#0e0e0e] border-t border-[#4b4454]">
+        <div className="max-w-6xl mx-auto px-6 py-12 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <p className="ff-display text-sm uppercase tracking-[0.2em] text-[#d5bbff]">
+            S&N Institute of Olfactory Sciences
+          </p>
+          <p className="ff-body text-[11px] tracking-wide text-[#968d9f]">
+            © {new Date().getFullYear()} S&N Institute of Olfactory Sciences.
+            All rights reserved.
+          </p>
+        </div>
+      </footer>
     </>
   );
 };

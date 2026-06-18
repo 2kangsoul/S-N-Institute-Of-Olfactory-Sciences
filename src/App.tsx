@@ -18,7 +18,7 @@ import ChatBot from "./Features/chatbot/Components/ChatBot";
 import NicheGuide from "./page/niche";
 import AboutUs from "./page/AboutUs";
 import NotFound from "./page/NotFound";
-import Dashboard from "./page/Dashboard";
+import Dashboard from "../src/page/Dashboard";
 
 function App() {
   const { fetchCurrentUser } = useAuthStore(); // ← tambahkan

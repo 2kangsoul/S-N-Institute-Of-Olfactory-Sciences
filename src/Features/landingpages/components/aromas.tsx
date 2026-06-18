@@ -1,7 +1,6 @@
-
 import { Link } from "react-router-dom";
 
-// Mendefinisikan tipe data untuk props menggunakan TypeScript
+// Define data types for props using TypeScript
 interface AromaProps {
   id: string;
   name: string;
@@ -9,24 +8,23 @@ interface AromaProps {
   imageUrl: string;
 }
 
-// Komponen AromaCard menerima props sesuai dengan tipe data di atas
+// The AromaCard component receives props according to the data type above
 export default function AromaCard({ id, name, desc, imageUrl }: AromaProps) {
   return (
     <Link to={`/aroma/${id}`} className="block group cursor-pointer">
-      <div className="w-full bg-white aspect-video mb-5 flex items-center justify-center overflow-hidden shadow-sm">
+      <div className="w-full bg-stone-100 aspect-[3/4] mb-5 overflow-hidden">
         <img
           src={imageUrl}
           alt={name}
-          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+          className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]"
         />
       </div>
-      <h3 className="text-lg font-bold mb-2 group-hover:text-gray-600 transition-colors">
+      <h3 className="text-sm uppercase tracking-[0.2em] text-stone-800 mb-2 transition-colors group-hover:text-stone-400">
         {name}
       </h3>
-      <p className="text-sm text-gray-500 leading-relaxed">
+      <p className="text-sm text-stone-500 leading-relaxed font-light">
         {desc}
       </p>
     </Link>
   );
 }
-

@@ -81,6 +81,7 @@ export const useAuthStore = create<AuthState>()(
           ? {
               userToken: state.user.userToken,
               objectId: state.user.objectId,
+              role: state.user.role,
             }
           : null,
       }),
