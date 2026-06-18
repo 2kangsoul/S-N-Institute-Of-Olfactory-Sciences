@@ -1,7 +1,7 @@
 import { Routes, Route } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
-import { useEffect } from "react"; // ← tambahkan
-import { useAuthStore } from "./stores/useAuthStore"; // ← tambahkan
+import { useEffect } from "react";
+import { useAuthStore } from "./stores/useAuthStore";
 
 // Import Layout
 import AuthLayout from "./layout/AuthLayout";
@@ -19,12 +19,14 @@ import NicheGuide from "./page/niche";
 import AboutUs from "./page/AboutUs";
 import NotFound from "./page/NotFound";
 import Dashboard from "../src/page/Dashboard";
+import Awards from "./page/Awards"
+import AwardsCategory from "./page/AwardsCategory";
 
 function App() {
-  const { fetchCurrentUser } = useAuthStore(); // ← tambahkan
+  const { fetchCurrentUser } = useAuthStore();
 
   useEffect(() => {
-    fetchCurrentUser(); // ← tambahkan
+    fetchCurrentUser();
   }, []);
 
   return (
@@ -60,6 +62,8 @@ function App() {
           <Route path="/blog" element={<Blog />} />
           <Route path="/niche" element={<NicheGuide />} />
           <Route path="/aboutus" element={<AboutUs />} />
+          <Route path="/awards" element={<Awards />} /> {/* ✅ Tambahan baru */}
+          <Route path="/awards/:category" element={<AwardsCategory />} /> {/* ✅ Tambahan baru */}
 
           {/* Rute Terlindungi (Wajib Login, dicegat oleh AuthLayout) */}
           <Route element={<AuthLayout />}>

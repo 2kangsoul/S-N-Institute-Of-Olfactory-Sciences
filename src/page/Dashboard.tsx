@@ -22,10 +22,10 @@ import {
   Download,
   Plus,
   ArrowRight,
+  X,
 } from "lucide-react";
 
 async function fetchDashboardData() {
-  // 1. Fetch Pageviews, Subscriptions, dan Financials (Revenue & Profit) dari Backend
   let pageviewsData = { total: 0, trend: "0%", isPositive: true };
   let subscriptionsData = { total: 0, trend: "0%", isPositive: true };
   let financialsData = {
@@ -34,31 +34,60 @@ async function fetchDashboardData() {
     profitTrend: "0%",
     isProfitPositive: true,
   };
+  let recentOrders = [];
+  let monthlyUsersData = { total: 0, trend: "0%", isPositive: true };
+  let newSignUpsData = { total: 0, trend: "0%", isPositive: true };
+  let chartData = [];
+  let sessionsData = { total: 0, trend: "0%", isPositive: true, chartData: [] };
 
   try {
-    const [pageviewsRes, subscriptionsRes, financialsRes] = await Promise.all([
+    const [
+      pageviewsRes,
+      subscriptionsRes,
+      financialsRes,
+      monthlyUsersRes,
+      signUpsRes,
+      chartRes,
+      sessionsRes,
+    ] = await Promise.all([
       apiClient.get("/analytics/pageviews"),
       apiClient.get("/subscriptions/data"),
-      apiClient.get("/orders/financials"), // <-- Data Dinamis Baru
+      apiClient.get("/orders/financials"),
+      apiClient.get("/users/monthly"),
+      apiClient.get("/signups/data"),
+      apiClient.get("/expenses/chart"),
+      apiClient.get("/analytics/sessions"),
     ]);
     pageviewsData = pageviewsRes.data?.data || pageviewsData;
     subscriptionsData = subscriptionsRes.data?.data || subscriptionsData;
     financialsData = financialsRes.data?.data || financialsData;
+    monthlyUsersData = monthlyUsersRes.data?.data || monthlyUsersData;
+    newSignUpsData = signUpsRes.data?.data || newSignUpsData;
+    chartData = chartRes.data?.data || chartData;
+    sessionsData = sessionsRes.data?.data || sessionsData;
   } catch (error) {
     console.error("Gagal mengambil data API:", error);
   }
 
-  // 2. Query Prisma dihapus karena ini di Frontend.
-  // Nilai seperti monthlyUsers, deviceData, dll akan otomatis menggunakan
-  // nilai dummy yang sudah kamu pasang di komponen UI sampai API-nya siap.
+  try {
+    const recentOrdersRes = await apiClient.get("/orders/recent");
+    recentOrders = recentOrdersRes.data?.data || [];
+  } catch (error) {
+    console.error("Gagal mengambil recent orders:", error);
+  }
 
   return {
     pageviews: pageviewsData,
     subscriptions: subscriptionsData,
-    totalRevenue: financialsData.totalRevenue, // <-- Memasukkan objek data dinamis
-    totalProfit: financialsData.totalProfit, // <-- Memasukkan objek data dinamis
-    profitTrend: financialsData.profitTrend, // <-- Memasukkan objek data dinamis
-    isProfitPositive: financialsData.isProfitPositive, // <-- Memasukkan objek data dinamis
+    totalRevenue: financialsData.totalRevenue,
+    totalProfit: financialsData.totalProfit,
+    profitTrend: financialsData.profitTrend,
+    isProfitPositive: financialsData.isProfitPositive,
+    recentOrders,
+    monthlyUsers: monthlyUsersData,
+    newSignUps: newSignUpsData,
+    chartData,
+    sessions: sessionsData,
   };
 }
 
@@ -150,22 +179,572 @@ const StatusBadge = ({ status }) => {
   );
 };
 
+const CreateOrderModal = ({ onClose, onSuccess }) => {
+  const [form, setForm] = useState({
+    orderNumber: "",
+    totalAmount: "",
+    profitAmount: "",
+    note: "",
+    status: "Pending",
+    userId: "",
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleSubmit = async () => {
+    if (
+      !form.orderNumber ||
+      !form.totalAmount ||
+      !form.profitAmount ||
+      !form.userId
+    ) {
+      setError("Semua field wajib diisi.");
+      return;
+    }
+    setIsSubmitting(true);
+    setError("");
+    try {
+      await apiClient.post("/orders", {
+        orderNumber: form.orderNumber,
+        totalAmount: parseFloat(form.totalAmount),
+        profitAmount: parseFloat(form.profitAmount),
+        status: form.status,
+        userId: form.userId,
+        note: form.note,
+        items: [],
+      });
+      onSuccess();
+      onClose();
+    } catch (err) {
+      setError("Gagal membuat order. Coba lagi.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <div
+      style={{
+        position: "fixed",
+        inset: 0,
+        background: "rgba(0,0,0,0.6)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        zIndex: 1000,
+      }}
+    >
+      <div
+        style={{
+          background: "#161b2e",
+          borderRadius: "12px",
+          padding: "24px",
+          width: "400px",
+          border: "0.5px solid #1e2744",
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: "20px",
+          }}
+        >
+          <div style={{ fontSize: "14px", fontWeight: 500, color: "#fff" }}>
+            Create Order
+          </div>
+          <button
+            onClick={onClose}
+            style={{
+              background: "transparent",
+              border: "none",
+              cursor: "pointer",
+              color: "#64748b",
+            }}
+          >
+            <X size={16} />
+          </button>
+        </div>
+
+        {[
+          {
+            label: "Order Number",
+            key: "orderNumber",
+            placeholder: "#INV-002",
+          },
+          { label: "Total Amount", key: "totalAmount", placeholder: "100000" },
+          { label: "Profit Amount", key: "profitAmount", placeholder: "30000" },
+          { label: "User ID", key: "userId", placeholder: "uuid user..." },
+          {
+            label: "Note",
+            key: "note",
+            placeholder: "Catatan order (opsional)",
+          },
+        ].map(({ label, key, placeholder }) => (
+          <div key={key} style={{ marginBottom: "14px" }}>
+            <div
+              style={{
+                fontSize: "11px",
+                color: "#64748b",
+                marginBottom: "6px",
+              }}
+            >
+              {label}
+            </div>
+            <input
+              value={form[key]}
+              onChange={(e) => setForm({ ...form, [key]: e.target.value })}
+              placeholder={placeholder}
+              style={{
+                width: "100%",
+                background: "#0f1117",
+                border: "0.5px solid #1e2744",
+                borderRadius: "6px",
+                padding: "8px 10px",
+                fontSize: "12px",
+                color: "#fff",
+                outline: "none",
+                boxSizing: "border-box",
+              }}
+            />
+          </div>
+        ))}
+
+        <div style={{ marginBottom: "20px" }}>
+          <div
+            style={{ fontSize: "11px", color: "#64748b", marginBottom: "6px" }}
+          >
+            Status
+          </div>
+          <select
+            value={form.status}
+            onChange={(e) => setForm({ ...form, status: e.target.value })}
+            style={{
+              width: "100%",
+              background: "#0f1117",
+              border: "0.5px solid #1e2744",
+              borderRadius: "6px",
+              padding: "8px 10px",
+              fontSize: "12px",
+              color: "#fff",
+              outline: "none",
+            }}
+          >
+            <option value="Pending">Pending</option>
+            <option value="Paid">Paid</option>
+          </select>
+        </div>
+
+        {error && (
+          <div
+            style={{ fontSize: "11px", color: "#ef4444", marginBottom: "12px" }}
+          >
+            {error}
+          </div>
+        )}
+
+        <div
+          style={{ display: "flex", gap: "8px", justifyContent: "flex-end" }}
+        >
+          <button
+            onClick={onClose}
+            style={{
+              padding: "7px 14px",
+              borderRadius: "6px",
+              fontSize: "12px",
+              cursor: "pointer",
+              background: "transparent",
+              border: "0.5px solid #2d3748",
+              color: "#94a3b8",
+            }}
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleSubmit}
+            disabled={isSubmitting}
+            style={{
+              padding: "7px 14px",
+              borderRadius: "6px",
+              fontSize: "12px",
+              cursor: "pointer",
+              background: "#7c3aed",
+              border: "none",
+              color: "#fff",
+              opacity: isSubmitting ? 0.6 : 1,
+            }}
+          >
+            {isSubmitting ? "Saving..." : "Save Order"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ✅ Tambahan baru: Modal Analytics
+const AnalyticsModal = ({ onClose, data }) => {
+  const deviceChartData = data?.deviceData?.map((d) => ({
+    name: d.device || "Unknown",
+    value: d._count.device,
+  })) || [
+    { name: "Desktop", value: 15624 },
+    { name: "Phone app", value: 5548 },
+    { name: "Laptop", value: 2478 },
+  ];
+
+  const totalDeviceUsers = deviceChartData.reduce((s, d) => s + d.value, 0);
+  const countryData = data?.countryData || [];
+
+  return (
+    <div
+      style={{
+        position: "fixed",
+        inset: 0,
+        background: "rgba(0,0,0,0.7)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        zIndex: 1000,
+      }}
+    >
+      <div
+        style={{
+          background: "#161b2e",
+          borderRadius: "12px",
+          padding: "24px",
+          width: "700px",
+          maxHeight: "85vh",
+          overflowY: "auto",
+          border: "0.5px solid #1e2744",
+        }}
+      >
+        {/* Header */}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: "20px",
+          }}
+        >
+          <div style={{ fontSize: "14px", fontWeight: 500, color: "#fff" }}>
+            Analytics Report
+          </div>
+          <button
+            onClick={onClose}
+            style={{
+              background: "transparent",
+              border: "none",
+              cursor: "pointer",
+              color: "#64748b",
+            }}
+          >
+            <X size={16} />
+          </button>
+        </div>
+
+        {/* Summary Cards */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(3, 1fr)",
+            gap: "12px",
+            marginBottom: "20px",
+          }}
+        >
+          {[
+            { label: "Total Sessions", value: data?.sessions?.total ?? 0 },
+            { label: "Total Pageviews", value: data?.pageviews?.total ?? 0 },
+            { label: "Total Users", value: totalDeviceUsers },
+          ].map((card, i) => (
+            <div
+              key={i}
+              style={{
+                background: "#0f1117",
+                borderRadius: "8px",
+                padding: "12px",
+                border: "0.5px solid #1e2744",
+              }}
+            >
+              <div
+                style={{
+                  fontSize: "11px",
+                  color: "#64748b",
+                  marginBottom: "6px",
+                }}
+              >
+                {card.label}
+              </div>
+              <div style={{ fontSize: "20px", fontWeight: 500, color: "#fff" }}>
+                {card.value.toLocaleString()}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Sessions Chart */}
+        <div
+          style={{
+            background: "#0f1117",
+            borderRadius: "8px",
+            padding: "12px",
+            border: "0.5px solid #1e2744",
+            marginBottom: "16px",
+          }}
+        >
+          <div
+            style={{ fontSize: "12px", color: "#94a3b8", marginBottom: "10px" }}
+          >
+            Sessions — Last 12 months
+          </div>
+          <ResponsiveContainer width="100%" height={150}>
+            <AreaChart
+              data={
+                data?.sessions?.chartData?.length ? data.sessions.chartData : []
+              }
+            >
+              <CartesianGrid
+                strokeDasharray="3 3"
+                stroke="rgba(255,255,255,0.04)"
+                vertical={false}
+              />
+              <XAxis
+                dataKey="month"
+                stroke="#4b5563"
+                tick={{ fontSize: 10, fill: "#4b5563" }}
+              />
+              <YAxis
+                stroke="#4b5563"
+                tick={{ fontSize: 10, fill: "#4b5563" }}
+              />
+              <Tooltip
+                contentStyle={{
+                  background: "#1e2744",
+                  border: "none",
+                  borderRadius: "6px",
+                  color: "#fff",
+                  fontSize: "11px",
+                }}
+              />
+              <Area
+                type="monotone"
+                dataKey="sessions"
+                stroke="#7c3aed"
+                fill="rgba(124,58,237,0.12)"
+                strokeWidth={1.5}
+                dot={false}
+              />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* Device & Country */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            gap: "12px",
+          }}
+        >
+          {/* Device Breakdown */}
+          <div
+            style={{
+              background: "#0f1117",
+              borderRadius: "8px",
+              padding: "12px",
+              border: "0.5px solid #1e2744",
+            }}
+          >
+            <div
+              style={{
+                fontSize: "12px",
+                color: "#94a3b8",
+                marginBottom: "10px",
+              }}
+            >
+              Users by device
+            </div>
+            <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+              <PieChart width={90} height={90}>
+                <Pie
+                  data={deviceChartData}
+                  cx={40}
+                  cy={40}
+                  innerRadius={28}
+                  outerRadius={40}
+                  dataKey="value"
+                  strokeWidth={0}
+                >
+                  {deviceChartData.map((_, i) => (
+                    <Cell
+                      key={i}
+                      fill={DEVICE_COLORS[i % DEVICE_COLORS.length]}
+                    />
+                  ))}
+                </Pie>
+              </PieChart>
+              <div style={{ flex: 1 }}>
+                {deviceChartData.map((d, i) => (
+                  <div key={i} style={{ marginBottom: "8px" }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        marginBottom: "3px",
+                      }}
+                    >
+                      <span
+                        style={{
+                          fontSize: "11px",
+                          color: "#94a3b8",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "4px",
+                        }}
+                      >
+                        <span
+                          style={{
+                            width: "6px",
+                            height: "6px",
+                            borderRadius: "2px",
+                            background: DEVICE_COLORS[i],
+                            display: "inline-block",
+                          }}
+                        />
+                        {d.name}
+                      </span>
+                      <span style={{ fontSize: "11px", color: "#fff" }}>
+                        {d.value.toLocaleString()}
+                      </span>
+                    </div>
+                    <div
+                      style={{
+                        height: "3px",
+                        background: "#1e2744",
+                        borderRadius: "2px",
+                        overflow: "hidden",
+                      }}
+                    >
+                      <div
+                        style={{
+                          height: "100%",
+                          borderRadius: "2px",
+                          background: DEVICE_COLORS[i],
+                          width: `${Math.round((d.value / totalDeviceUsers) * 100)}%`,
+                        }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Country Breakdown */}
+          <div
+            style={{
+              background: "#0f1117",
+              borderRadius: "8px",
+              padding: "12px",
+              border: "0.5px solid #1e2744",
+            }}
+          >
+            <div
+              style={{
+                fontSize: "12px",
+                color: "#94a3b8",
+                marginBottom: "10px",
+              }}
+            >
+              Users by country
+            </div>
+            <div
+              style={{ display: "flex", flexDirection: "column", gap: "8px" }}
+            >
+              {(countryData.length
+                ? countryData.map((c) => ({
+                    name: c.country,
+                    count: c._count.country,
+                  }))
+                : [
+                    { name: "United States", count: 30 },
+                    { name: "United Kingdom", count: 25 },
+                    { name: "Canada", count: 25 },
+                    { name: "Australia", count: 15 },
+                    { name: "Spain", count: 15 },
+                  ]
+              ).map((c, i) => {
+                const total = countryData.length
+                  ? countryData.reduce((s, x) => s + x._count.country, 0)
+                  : 110;
+                const pct = Math.round((c.count / total) * 100);
+                return (
+                  <div key={i}>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        marginBottom: "3px",
+                      }}
+                    >
+                      <span style={{ fontSize: "11px", color: "#94a3b8" }}>
+                        {c.name}
+                      </span>
+                      <span style={{ fontSize: "11px", color: "#64748b" }}>
+                        {pct}%
+                      </span>
+                    </div>
+                    <div
+                      style={{
+                        height: "3px",
+                        background: "#1e2744",
+                        borderRadius: "2px",
+                        overflow: "hidden",
+                      }}
+                    >
+                      <div
+                        style={{
+                          height: "100%",
+                          borderRadius: "2px",
+                          background: "#7c3aed",
+                          width: `${pct}%`,
+                        }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export default function Dashboard() {
   const [data, setData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [showCreateOrder, setShowCreateOrder] = useState(false);
+  const [showAnalytics, setShowAnalytics] = useState(false); // ✅ Tambahan baru
 
-  useEffect(() => {
+  const loadData = () => {
+    setIsLoading(true);
     fetchDashboardData()
       .then(setData)
       .catch(console.error)
       .finally(() => setIsLoading(false));
+  };
+
+  useEffect(() => {
+    loadData();
   }, []);
 
-  const revenueChartData = MONTH_NAMES.map((month, i) => ({
-    month,
-    revenue: Math.round(Math.random() * 60 + 60),
-    expenses: Math.round(Math.random() * 40 + 30),
-  }));
+  const revenueChartData = data?.chartData?.length
+    ? data.chartData
+    : MONTH_NAMES.map((month) => ({ month, revenue: 0, expenses: 0 }));
 
   const sessionChartData = Array.from({ length: 12 }, (_, i) => ({
     month: MONTH_NAMES[i],
@@ -214,6 +793,19 @@ export default function Dashboard() {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+      {/* ✅ Tambahan baru: Modal Create Order */}
+      {showCreateOrder && (
+        <CreateOrderModal
+          onClose={() => setShowCreateOrder(false)}
+          onSuccess={loadData}
+        />
+      )}
+
+      {/* ✅ Tambahan baru: Modal Analytics */}
+      {showAnalytics && (
+        <AnalyticsModal onClose={() => setShowAnalytics(false)} data={data} />
+      )}
+
       {/* Topbar */}
       <div
         style={{
@@ -249,6 +841,7 @@ export default function Dashboard() {
             <Download size={12} /> Export data
           </button>
           <button
+            onClick={() => setShowCreateOrder(true)}
             style={{
               padding: "6px 14px",
               borderRadius: "6px",
@@ -284,15 +877,15 @@ export default function Dashboard() {
         />
         <MetricCard
           label="Monthly users"
-          value={formatNumber(data?.monthlyUsers || 23600)}
-          trend="8.2%"
-          positive
+          value={formatNumber(data?.monthlyUsers?.total ?? 0)}
+          trend={data?.monthlyUsers?.trend ?? "0%"}
+          positive={data?.monthlyUsers?.isPositive ?? true}
         />
         <MetricCard
           label="New sign-ups"
-          value={formatNumber(data?.newSignups || 756)}
-          trend="3.1%"
-          positive={false}
+          value={formatNumber(data?.newSignUps?.total ?? 0)}
+          trend={data?.newSignUps?.trend ?? "0%"}
+          positive={data?.newSignUps?.isPositive ?? true}
         />
         <MetricCard
           label="Subscriptions"
@@ -338,7 +931,6 @@ export default function Dashboard() {
                   marginTop: "4px",
                 }}
               >
-                {/* REVENUE SEKARANG DINAMIS */}
                 {formatCurrency(data?.totalRevenue || 0)}
               </div>
             </div>
@@ -357,7 +949,6 @@ export default function Dashboard() {
                   gap: "8px",
                 }}
               >
-                {/* PROFIT SEKARANG DINAMIS */}
                 {formatCurrency(data?.totalProfit || 0)}
                 <span
                   style={{
@@ -375,7 +966,6 @@ export default function Dashboard() {
                     gap: "3px",
                   }}
                 >
-                  {/* TREND PROFIT SEKARANG DINAMIS */}
                   {(data?.isProfitPositive ?? true) ? (
                     <TrendingUp size={10} />
                   ) : (
@@ -499,22 +1089,35 @@ export default function Dashboard() {
                 gap: "8px",
               }}
             >
-              {formatNumber(data?.totalSessions || 400)}
+              {formatNumber(data?.sessions?.total ?? 0)}
               <span
                 style={{
                   fontSize: "10px",
                   padding: "2px 6px",
                   borderRadius: "4px",
-                  background: "rgba(16,185,129,0.15)",
-                  color: "#10b981",
+                  background:
+                    (data?.sessions?.isPositive ?? true)
+                      ? "rgba(16,185,129,0.15)"
+                      : "rgba(239,68,68,0.15)",
+                  color:
+                    (data?.sessions?.isPositive ?? true)
+                      ? "#10b981"
+                      : "#ef4444",
                 }}
               >
-                ↑ 0%
+                {(data?.sessions?.isPositive ?? true) ? "↑" : "↓"}{" "}
+                {data?.sessions?.trend ?? "0%"}
               </span>
             </div>
           </div>
           <ResponsiveContainer width="100%" height={80}>
-            <AreaChart data={sessionChartData}>
+            <AreaChart
+              data={
+                data?.sessions?.chartData?.length
+                  ? data.sessions.chartData
+                  : sessionChartData
+              }
+            >
               <Area
                 type="monotone"
                 dataKey="sessions"
@@ -552,7 +1155,9 @@ export default function Dashboard() {
             >
               Last 12 months
             </div>
+            {/* ✅ Tambahan baru: onClick buka modal analytics */}
             <div
+              onClick={() => setShowAnalytics(true)}
               style={{
                 fontSize: "12px",
                 color: "#a78bfa",
@@ -937,7 +1542,7 @@ export default function Dashboard() {
               }}
             >
               <div style={{ fontSize: "16px", fontWeight: 500, color: "#fff" }}>
-                {formatNumber(data?.monthlyUsers || 12400)}
+                {formatNumber(data?.monthlyUsers?.total || 12400)}
                 <span
                   style={{
                     fontSize: "10px",

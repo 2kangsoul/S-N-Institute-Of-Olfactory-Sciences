@@ -1,24 +1,17 @@
+// @ts-nocheck
+/* eslint-disable */
 export default function Footer() {
   return (
-    <>
-      <div className="max-w-7xl mx-auto px-6 py-4 mt-10">
-        <hr className="border-t border-gray-300" />
+    <footer className="w-full bg-[#0e0e0e] border-t border-[#4b4454]">
+      <div className="max-w-6xl mx-auto px-6 py-12 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <p className="ff-display text-sm uppercase tracking-[0.2em] text-[#d5bbff]">
+          S&N Institute of Olfactory Sciences
+        </p>
+        <p className="ff-body text-[11px] tracking-wide text-[#968d9f]">
+          © {new Date().getFullYear()} S&N Institute of Olfactory Sciences. All
+          rights reserved.
+        </p>
       </div>
-
-      <footer className="max-w-7xl mx-auto px-6 py-8 text-sm text-center text-gray-500">
-        <div className="flex flex-col items-center justify-center gap-2">
-          <img
-            src="/SaaFragrance.png"
-            alt="Saa Fragrance Logo"
-            className="h-8 object-contain grayscale opacity-60"
-          />
-          <p className="mt-2">Timeless scents for the modern soul.</p>
-          <p>
-            &copy; {new Date().getFullYear()} Saa Fragrance. All rights
-            reserved.
-          </p>
-        </div>
-      </footer>
-    </>
+    </footer>
   );
 }

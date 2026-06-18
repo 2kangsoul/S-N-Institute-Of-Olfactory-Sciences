@@ -1,11 +1,40 @@
-import React, { useState } from "react";
-// Pastikan path import ini sesuai dengan lokasi file api.ts Anda
+// @ts-nocheck
+/* eslint-disable */
+import { useState, useEffect } from "react"
+import ReactCountryFlag from "react-country-flag";
 import apiClient from "../../config/api";
 
 interface RegisterModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSwitchToLogin?: () => void;
+}
+
+interface Country {
+  name: string;
+  iso2: string;
+  iso3: string;
+  unicodeFlag: string;
+}
+
+interface Province {
+  id: string;
+  name: string;
+}
+
+interface Regency {
+  id: string;
+  name: string;
+}
+
+interface District {
+  id: string;
+  name: string;
+}
+
+interface Village {
+  id: string;
+  name: string;
 }
 
 export default function RegisterModal({
@@ -20,25 +49,148 @@ export default function RegisterModal({
   const [password, setPassword] = useState("");
   const [noHandphone, setNoHandphone] = useState("");
 
+  const [countries, setCountries] = useState<Country[]>([]);
+  const [selectedCountry, setSelectedCountry] = useState<Country | null>(null);
+  const [phoneCode, setPhoneCode] = useState("");
+  const [countrySearch, setCountrySearch] = useState(""); // ✅ Tambahan baru
+
+  const [provinces, setProvinces] = useState<Province[]>([]);
+  const [regencies, setRegencies] = useState<Regency[]>([]);
+  const [districts, setDistricts] = useState<District[]>([]);
+  const [villages, setVillages] = useState<Village[]>([]);
+
+  const [selectedProvince, setSelectedProvince] = useState("");
+  const [selectedRegency, setSelectedRegency] = useState("");
+  const [selectedDistrict, setSelectedDistrict] = useState("");
+  const [selectedVillage, setSelectedVillage] = useState("");
+  const [foreignAddress, setForeignAddress] = useState("");
+
   const [otp, setOtp] = useState("");
   const [generatedOtp, setGeneratedOtp] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
+  const isIndonesia = selectedCountry?.iso2 === "ID";
+
+  // ✅ Tambahan baru: filtered countries
+  const filteredCountries = countries.filter((c) =>
+    c.name.toLowerCase().includes(countrySearch.toLowerCase()),
+  );
+
+  useEffect(() => {
+    fetch("http://localhost:8000/api/countries")
+      .then((res) => res.json())
+      .then((res) => {
+        const arr = Array.isArray(res.data) ? res.data : [];
+        const sorted = arr
+          .filter((c: Country) => c !== null && c?.iso2)
+          .filter(
+            (c: Country, index: number, self: Country[]) =>
+              self.findIndex((t) => t.iso2 === c.iso2) === index,
+          )
+          .sort((a: Country, b: Country) => a.name.localeCompare(b.name));
+        setCountries(sorted);
+      })
+      .catch(console.error);
+  }, []);
+
+  // ✅ Tambahan baru: lock scroll
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (isIndonesia) {
+      fetch("http://localhost:8000/api/provinces")
+        .then((res) => res.json())
+        .then(setProvinces)
+        .catch(console.error);
+    }
+  }, [isIndonesia]);
+
+  useEffect(() => {
+    if (selectedProvince) {
+      fetch(`http://localhost:8000/api/regencies/${selectedProvince}`)
+        .then((res) => res.json())
+        .then(setRegencies)
+        .catch(console.error);
+      setSelectedRegency("");
+      setSelectedDistrict("");
+      setSelectedVillage("");
+      setDistricts([]);
+      setVillages([]);
+    }
+  }, [selectedProvince]);
+
+  useEffect(() => {
+    if (selectedRegency) {
+      fetch(`http://localhost:8000/api/districts/${selectedRegency}`)
+        .then((res) => res.json())
+        .then(setDistricts)
+        .catch(console.error);
+      setSelectedDistrict("");
+      setSelectedVillage("");
+      setVillages([]);
+    }
+  }, [selectedRegency]);
+
+  useEffect(() => {
+    if (selectedDistrict) {
+      fetch(`http://localhost:8000/api/villages/${selectedDistrict}`)
+        .then((res) => res.json())
+        .then(setVillages)
+        .catch(console.error);
+      setSelectedVillage("");
+    }
+  }, [selectedDistrict]);
+
+  const handleCountryChange = (iso2: string) => {
+    const country = countries.find((c) => c.iso2 === iso2);
+    if (country) {
+      setSelectedCountry(country);
+      setPhoneCode("");
+      setNoHandphone("");
+      setSelectedProvince("");
+      setSelectedRegency("");
+      setSelectedDistrict("");
+      setSelectedVillage("");
+      setForeignAddress("");
+    }
+  };
+
+  const getFullAddress = () => {
+    if (isIndonesia) {
+      const villageName =
+        villages.find((v) => v.id === selectedVillage)?.name || "";
+      const districtName =
+        districts.find((d) => d.id === selectedDistrict)?.name || "";
+      const regencyName =
+        regencies.find((r) => r.id === selectedRegency)?.name || "";
+      const provinceName =
+        provinces.find((p) => p.id === selectedProvince)?.name || "";
+      return [villageName, districtName, regencyName, provinceName]
+        .filter(Boolean)
+        .join(", ");
+    }
+    return foreignAddress;
+  };
+
   if (!isOpen) return null;
 
-  // ==========================================
-  // LANGKAH 1: MENGIRIM EMAIL OTP VIA EXPRESS.JS
-  // ==========================================
   const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
-    // Buat 6 digit angka acak (misal: 849201)
     const randomOtp = Math.floor(100000 + Math.random() * 900000).toString();
     setGeneratedOtp(randomOtp);
 
     try {
-      // UPDATE: Mengubah endpoint menjadi endpoint Express (misal: /send-email)
       await apiClient.post("/send-email", {
         subject: "Kode Verifikasi (OTP) - Saa Fragrance",
         bodyparts: {
@@ -49,17 +201,14 @@ export default function RegisterModal({
               <p>Halo <strong>${name}</strong>,</p>
               <p>Terima kasih telah mendaftar di <strong>Saa Fragrance</strong>! Kami sangat senang menyambut Anda.</p>
               <p>Untuk menyelesaikan proses pembuatan akun, silakan masukkan 6 digit kode verifikasi (OTP) berikut pada halaman web:</p>
-              
               <div style="text-align: center; margin: 35px 0;">
                 <span style="font-size: 36px; font-weight: bold; letter-spacing: 8px; color: #111; background-color: #f4f2ee; padding: 15px 30px; border-radius: 8px; display: inline-block;">
                   ${randomOtp}
                 </span>
               </div>
-              
               <p style="color: #d9534f; font-size: 14px; background-color: #fdf2f2; padding: 10px; border-left: 4px solid #d9534f;">
-                <strong>PENTING:</strong> Demi keamanan akun Anda, mohon untuk <strong>tidak membagikan kode ini</strong> kepada siapa pun. Kode ini hanya berlaku untuk sesi pendaftaran ini.
+                <strong>PENTING:</strong> Demi keamanan akun Anda, mohon untuk <strong>tidak membagikan kode ini</strong> kepada siapa pun.
               </p>
-              
               <hr style="border: none; border-top: 1px solid #eaeaea; margin: 30px 0;" />
               <p style="font-size: 12px; color: #888; text-align: center;">
                 Jika Anda tidak merasa melakukan pendaftaran ini, silakan abaikan email ini.
@@ -73,7 +222,6 @@ export default function RegisterModal({
         to: [email],
       });
 
-      // Jika berhasil dikirim, ganti tampilan ke form input OTP
       setStep(2);
     } catch (error: any) {
       console.error("Gagal mengirim OTP:", error);
@@ -85,13 +233,9 @@ export default function RegisterModal({
     }
   };
 
-  // ==========================================
-  // LANGKAH 2: COCOKKAN OTP & DAFTAR USER
-  // ==========================================
   const handleVerifyAndRegister = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Cek apakah angka yang diketik user sama dengan yang dibuat sistem
     if (otp !== generatedOtp) {
       alert("Kode OTP salah! Silakan periksa kembali email Anda.");
       return;
@@ -100,16 +244,16 @@ export default function RegisterModal({
     setIsLoading(true);
 
     try {
-      // UPDATE: Mengubah endpoint menjadi endpoint Express (/auth/register)
-      // Menambahkan mapping 'fullName' agar sesuai dengan schema Prisma
       await apiClient.post("/auth/register", {
         email: email,
         password: password,
-        fullName: name, // Prisma membutuhkan fullName
-        name: name, // Tetap dikirim berjaga-jaga jika controller butuh 'name'
+        fullName: name,
+        name: name,
         username: email.split("@")[0] + Date.now(),
-        no_handphone: noHandphone,
+        no_handphone: phoneCode + noHandphone,
         role: "user",
+        country: selectedCountry?.name || "",
+        address: getFullAddress(),
       });
 
       alert("Akun berhasil dibuat! Silakan Sign In.");
@@ -134,6 +278,14 @@ export default function RegisterModal({
     setEmail("");
     setPassword("");
     setNoHandphone("");
+    setSelectedCountry(null);
+    setPhoneCode("");
+    setSelectedProvince("");
+    setSelectedRegency("");
+    setSelectedDistrict("");
+    setSelectedVillage("");
+    setForeignAddress("");
+    setCountrySearch(""); // ✅ Tambahan baru
     setOtp("");
     setGeneratedOtp("");
     onClose();
@@ -141,7 +293,7 @@ export default function RegisterModal({
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-      <div className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden transform transition-all">
+      <div className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden transform transition-all max-h-[90vh] overflow-y-auto">
         {/* Header Modal */}
         <div className="flex justify-between items-center p-5 border-b border-gray-100 bg-[#f4f2ee]/30">
           <h2 className="text-xl font-bold text-gray-900 tracking-tight">
@@ -185,6 +337,7 @@ export default function RegisterModal({
                   placeholder="Masukkan nama Anda"
                 />
               </div>
+
               <div>
                 <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
                   Email
@@ -198,21 +351,238 @@ export default function RegisterModal({
                   placeholder="nama@email.com"
                 />
               </div>
+
+              {/* ✅ Update: Searchable country dropdown */}
+              <div>
+                <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
+                  Negara
+                </label>
+                <div style={{ position: "relative" }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                      padding: "10px 12px",
+                      background: "#f9fafb",
+                      border: "1px solid #e5e7eb",
+                      borderRadius: "8px",
+                    }}
+                  >
+                    {selectedCountry && (
+                      <span>{selectedCountry.unicodeFlag}</span>
+                    )}
+                    <input
+                      type="text"
+                      value={countrySearch}
+                      onChange={(e) => {
+                        setCountrySearch(e.target.value);
+                        setSelectedCountry(null);
+                      }}
+                      placeholder={
+                        selectedCountry
+                          ? selectedCountry.name
+                          : "Cari negara..."
+                      }
+                      style={{
+                        border: "none",
+                        outline: "none",
+                        background: "transparent",
+                        fontSize: "14px",
+                        width: "100%",
+                      }}
+                    />
+                  </div>
+
+                  {/* Dropdown list */}
+                  {countrySearch && (
+                    <div
+                      style={{
+                        position: "absolute",
+                        top: "100%",
+                        left: 0,
+                        right: 0,
+                        background: "#fff",
+                        border: "1px solid #e5e7eb",
+                        borderRadius: "8px",
+                        maxHeight: "200px",
+                        overflowY: "auto",
+                        zIndex: 9999,
+                        marginTop: "4px",
+                        boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                      }}
+                    >
+                      {filteredCountries.length === 0 ? (
+                        <div
+                          style={{
+                            padding: "10px 12px",
+                            fontSize: "13px",
+                            color: "#9ca3af",
+                          }}
+                        >
+                          Negara tidak ditemukan
+                        </div>
+                      ) : (
+                        filteredCountries.slice(0, 50).map((c) => (
+                          <div
+                            key={c.iso2}
+                            onClick={() => {
+                              handleCountryChange(c.iso2);
+                              setCountrySearch("");
+                            }}
+                            style={{
+                              padding: "8px 12px",
+                              fontSize: "13px",
+                              cursor: "pointer",
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "8px",
+                            }}
+                            onMouseEnter={(e) =>
+                              (e.currentTarget.style.background = "#f3f4f6")
+                            }
+                            onMouseLeave={(e) =>
+                              (e.currentTarget.style.background = "transparent")
+                            }
+                          >
+                            <span>{c.unicodeFlag}</span>
+                            <span>{c.name}</span>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Nomor Handphone */}
               <div>
                 <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
                   Nomor Handphone
                 </label>
-                <input
-                  type="tel"
-                  required
-                  value={noHandphone}
-                  onChange={(e) =>
-                    setNoHandphone(e.target.value.replace(/[^0-9]/g, ""))
-                  }
-                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 text-sm transition-all"
-                  placeholder="Contoh: 08123456789"
-                />
+                <div className="flex gap-2">
+                  <div className="flex items-center gap-1 px-3 py-2.5 bg-gray-100 border border-gray-200 rounded-lg text-sm font-medium text-gray-700 min-w-fit">
+                    {selectedCountry && (
+                      <ReactCountryFlag
+                        countryCode={selectedCountry.iso2}
+                        svg
+                        style={{ width: "16px", height: "16px" }}
+                      />
+                    )}
+                    <span>{selectedCountry?.unicodeFlag || "🌍"}</span>
+                  </div>
+                  <input
+                    type="tel"
+                    required
+                    value={noHandphone}
+                    onChange={(e) =>
+                      setNoHandphone(e.target.value.replace(/[^0-9]/g, ""))
+                    }
+                    className="flex-1 px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 text-sm transition-all"
+                    placeholder="8123456789"
+                  />
+                </div>
               </div>
+
+              {/* Alamat Indonesia */}
+              {isIndonesia && (
+                <>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
+                      Provinsi
+                    </label>
+                    <select
+                      value={selectedProvince}
+                      onChange={(e) => setSelectedProvince(e.target.value)}
+                      className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 text-sm transition-all"
+                    >
+                      <option value="">Pilih provinsi...</option>
+                      {provinces.map((p) => (
+                        <option key={p.id} value={p.id}>
+                          {p.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {selectedProvince && (
+                    <div>
+                      <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
+                        Kabupaten / Kota
+                      </label>
+                      <select
+                        value={selectedRegency}
+                        onChange={(e) => setSelectedRegency(e.target.value)}
+                        className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 text-sm transition-all"
+                      >
+                        <option value="">Pilih kabupaten/kota...</option>
+                        {regencies.map((r) => (
+                          <option key={r.id} value={r.id}>
+                            {r.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+
+                  {selectedRegency && (
+                    <div>
+                      <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
+                        Kecamatan
+                      </label>
+                      <select
+                        value={selectedDistrict}
+                        onChange={(e) => setSelectedDistrict(e.target.value)}
+                        className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 text-sm transition-all"
+                      >
+                        <option value="">Pilih kecamatan...</option>
+                        {districts.map((d) => (
+                          <option key={d.id} value={d.id}>
+                            {d.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+
+                  {selectedDistrict && (
+                    <div>
+                      <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
+                        Kelurahan / Desa
+                      </label>
+                      <select
+                        value={selectedVillage}
+                        onChange={(e) => setSelectedVillage(e.target.value)}
+                        className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 text-sm transition-all"
+                      >
+                        <option value="">Pilih kelurahan/desa...</option>
+                        {villages.map((v) => (
+                          <option key={v.id} value={v.id}>
+                            {v.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+                </>
+              )}
+
+              {/* Alamat luar negeri */}
+              {selectedCountry && !isIndonesia && (
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
+                    Alamat
+                  </label>
+                  <input
+                    type="text"
+                    value={foreignAddress}
+                    onChange={(e) => setForeignAddress(e.target.value)}
+                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 text-sm transition-all"
+                    placeholder="Masukkan kota / state / alamat Anda"
+                  />
+                </div>
+              )}
+
               <div>
                 <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
                   Password
@@ -226,6 +596,7 @@ export default function RegisterModal({
                   placeholder="Minimal 8 karakter"
                 />
               </div>
+
               <button
                 type="submit"
                 disabled={isLoading}
@@ -233,6 +604,7 @@ export default function RegisterModal({
               >
                 {isLoading ? "Mengirim..." : "Kirim Kode OTP"}
               </button>
+
               {onSwitchToLogin && (
                 <p className="text-center text-xs text-gray-500 mt-4">
                   Sudah punya akun?{" "}
