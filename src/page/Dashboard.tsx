@@ -1,7 +1,6 @@
 // @ts-nocheck
 /* eslint-disable */
 import { useState, useEffect } from "react";
-import { PrismaClient } from "@prisma/client";
 import apiClient from "../config/api";
 import {
   ResponsiveContainer,
@@ -25,8 +24,6 @@ import {
   ArrowRight,
 } from "lucide-react";
 
-const prisma = new PrismaClient();
-
 async function fetchDashboardData() {
   // 1. Fetch Pageviews, Subscriptions, dan Financials (Revenue & Profit) dari Backend
   let pageviewsData = { total: 0, trend: "0%", isPositive: true };
@@ -44,78 +41,24 @@ async function fetchDashboardData() {
       apiClient.get("/subscriptions/data"),
       apiClient.get("/orders/financials"), // <-- Data Dinamis Baru
     ]);
-    pageviewsData = pageviewsRes.data.data;
-    subscriptionsData = subscriptionsRes.data.data;
-    financialsData = financialsRes.data.data;
+    pageviewsData = pageviewsRes.data?.data || pageviewsData;
+    subscriptionsData = subscriptionsRes.data?.data || subscriptionsData;
+    financialsData = financialsRes.data?.data || financialsData;
   } catch (error) {
     console.error("Gagal mengambil data API:", error);
   }
 
-  // 2. Data sisanya tetap menggunakan logika lama untuk sementara waktu
-  const [
-    monthlyUsers,
-    newSignups,
-    recentOrders,
-    deviceData,
-    countryData,
-    revenueByMonth,
-    expenseByMonth,
-    totalSessions,
-  ] = await Promise.all([
-    prisma.user.count({ where: { deletedAt: null } }),
-    prisma.user.count({
-      where: {
-        createdAt: {
-          gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
-        },
-      },
-    }),
-    prisma.order.findMany({
-      take: 5,
-      orderBy: { createdAt: "desc" },
-      where: { deletedAt: null },
-      include: { user: { select: { fullName: true, email: true } } },
-    }),
-    prisma.user.groupBy({
-      by: ["device"],
-      _count: { device: true },
-      where: { device: { not: null } },
-    }),
-    prisma.user.groupBy({
-      by: ["country"],
-      _count: { country: true },
-      where: { country: { not: null } },
-      orderBy: { _count: { country: "desc" } },
-      take: 5,
-    }),
-    prisma.order.groupBy({
-      by: ["createdAt"],
-      _sum: { totalAmount: true },
-      where: { deletedAt: null },
-    }),
-    prisma.expense.groupBy({
-      by: ["createdAt"],
-      _sum: { amount: true },
-    }),
-    // prisma.order.aggregate DIHAPUS DARI SINI
-    prisma.siteAnalytic.count(),
-  ]);
+  // 2. Query Prisma dihapus karena ini di Frontend.
+  // Nilai seperti monthlyUsers, deviceData, dll akan otomatis menggunakan
+  // nilai dummy yang sudah kamu pasang di komponen UI sampai API-nya siap.
 
   return {
     pageviews: pageviewsData,
-    monthlyUsers,
-    newSignups,
     subscriptions: subscriptionsData,
-    recentOrders,
-    deviceData,
-    countryData,
-    revenueByMonth,
-    expenseByMonth,
     totalRevenue: financialsData.totalRevenue, // <-- Memasukkan objek data dinamis
     totalProfit: financialsData.totalProfit, // <-- Memasukkan objek data dinamis
     profitTrend: financialsData.profitTrend, // <-- Memasukkan objek data dinamis
     isProfitPositive: financialsData.isProfitPositive, // <-- Memasukkan objek data dinamis
-    totalSessions,
   };
 }
 
