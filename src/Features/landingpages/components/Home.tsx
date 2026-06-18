@@ -56,7 +56,7 @@ const Home = () => {
           className="absolute inset-0 w-full h-full object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-b from-black/40 to-[#050505]/90" />
-        <div className="relative z-10 px-6 text-center max-w-3xl mt-16">
+        <div className="relative z-10 px-6 text-center max-w-3xl mt-0">
           <h1 className="ff-display text-4xl md:text-6xl text-[#e5e2e1] tracking-tight leading-tight drop-shadow-2xl">
             S&N Institute of Olfactory Sciences
           </h1>

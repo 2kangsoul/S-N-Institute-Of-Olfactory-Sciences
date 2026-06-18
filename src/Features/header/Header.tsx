@@ -22,7 +22,7 @@ export default function Header(props: HeaderProps) {
     <>
       <header
         // Mengurangi py-4 menjadi py-2 dan py-2 menjadi py-1 agar header lebih tipis
-        className={`flex justify-between items-center px-6 sticky top-0 z-50 transition-all duration-500 relative ${
+        className={`flex justify-between items-center px-6 sticky top-0 z-10 transition-all duration-500 relative ${
           isScrolled
             ? "bg-[#f4f2ee]/90 backdrop-blur-md shadow-sm py-1"
             : "bg-transparent py-2"
