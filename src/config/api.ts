@@ -22,7 +22,9 @@ apiClient.interceptors.request.use(
       try {
         const parsedStorage = JSON.parse(authStorage);
         // Dukung properti 'token' (Express) dan 'userToken' (Sistem lama)
-        const token = parsedStorage?.state?.user?.token || parsedStorage?.state?.user?.userToken;
+        const token =
+          parsedStorage?.state?.user?.token ||
+          parsedStorage?.state?.user?.userToken;
 
         if (token) {
           config.headers["Authorization"] = `Bearer ${token}`;
@@ -36,7 +38,7 @@ apiClient.interceptors.request.use(
   },
   (error) => {
     return Promise.reject(error);
-  }
+  },
 );
 
 // ====================================================================
@@ -58,13 +60,15 @@ apiClient.interceptors.response.use(
         console.warn("Sesi habis atau token tidak valid. Membersihkan sesi...");
 
         localStorage.removeItem("auth-storage");
-        alert("Sesi login Anda telah berakhir demi keamanan. Silakan login kembali.");
+        alert(
+          "Sesi login Anda telah berakhir demi keamanan. Silakan login kembali.",
+        );
         window.location.href = "/";
       }
     }
 
     return Promise.reject(error);
-  }
+  },
 );
 
 export default apiClient;

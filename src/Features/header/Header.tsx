@@ -26,15 +26,15 @@ export default function Header(props: HeaderProps) {
         // Mengurangi py-4 menjadi py-2 dan py-2 menjadi py-1 agar header lebih tipis
         className={`flex justify-between items-center px-6 sticky top-0 z-50 transition-all duration-500 ${
           isScrolled
-            ? "bg-[#f4f2ee]/90 backdrop-blur-md shadow-sm py-1"
+            ? "bg-[#000000]/90 backdrop-blur-md shadow-sm py-1"
             : "bg-transparent py-2"
         }`}
       >
         <Link to="/" className="flex-shrink-0">
           <img
-            src="/SaaFragrance.png"
+            src="/SNN.jpeg"
             alt="Saa Fragrance Logo"
-            className="h-8 object-contain" // Sedikit diperkecil dari h-10 ke h-8 agar proporsional
+            className="h-10 transition duration-300 hover:brightness-110 object-contain" // Sedikit diperkecil dari h-10 ke h-8 agar proporsional
           />
         </Link>
 

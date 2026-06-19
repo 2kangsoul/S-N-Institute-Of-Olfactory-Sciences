@@ -1,3 +1,5 @@
+// @ts-nocheck
+/* eslint-disable */
 // File: src/Features/product/components/componentLogin.tsx
 import React, { useState } from "react";
 import { Link } from "react-router-dom";

@@ -31,18 +31,16 @@ const heroSideImages = [
 ];
 
 // ─── Categories Data ─────────────────────────────────────────────────────────────
-// ─── Categories Data ─────────────────────────────────────────────────────────────
-const CATEGORY_META: Record<
-  string,
-  {
-    image: string;
-    accent: string;
-    vibe: string;
-    icon: string;
-    span: string;
-    number: string;
-  }
-> = {
+type CategoryMeta = {
+  image: string;
+  accent: string;
+  vibe: string;
+  icon: string;
+  span: string;
+  number: string;
+};
+
+const CATEGORY_META: { [key: string]: CategoryMeta } = {
   "Best Citrus": {
     image: "/Citrus.jpg",
     accent: "amber",
@@ -138,7 +136,7 @@ const Home = () => {
       const scrollableHeight = window.innerHeight * 2;
       const scrolled = -rect.top;
       setHeroScrollProgress(
-        Math.max(0, Math.min(1, scrolled / scrollableHeight))
+        Math.max(0, Math.min(1, scrolled / scrollableHeight)),
       );
     };
     window.addEventListener("scroll", handleScroll, { passive: true });
@@ -149,7 +147,7 @@ const Home = () => {
   const textOpacity = Math.max(0, 1 - heroScrollProgress / 0.2);
   const imageProgress = Math.max(
     0,
-    Math.min(1, (heroScrollProgress - 0.2) / 0.8)
+    Math.min(1, (heroScrollProgress - 0.2) / 0.8),
   );
   const centerWidth = 100 - imageProgress * 58;
   const centerHeight = 100 - imageProgress * 30;
@@ -234,7 +232,7 @@ const Home = () => {
       const viewportWidth = window.innerWidth;
       const viewportHeight = window.innerHeight;
       setGalleryHeight(
-        `${viewportHeight + (containerWidth - viewportWidth)}px`
+        `${viewportHeight + (containerWidth - viewportWidth)}px`,
       );
     };
     const timer = setTimeout(calculateHeight, 100);
@@ -281,7 +279,7 @@ const Home = () => {
           }
         });
       },
-      { threshold: 0.15 }
+      { threshold: 0.15 },
     );
     els.forEach((el) => observer.observe(el));
     return () => observer.disconnect();
@@ -467,14 +465,14 @@ const Home = () => {
                 data.accent === "amber"
                   ? "#f59e0b"
                   : data.accent === "violet"
-                  ? "#8b5cf6"
-                  : data.accent === "rose"
-                  ? "#f43f5e"
-                  : data.accent === "emerald"
-                  ? "#10b981"
-                  : data.accent === "orange"
-                  ? "#f97316"
-                  : "#e9c349";
+                    ? "#8b5cf6"
+                    : data.accent === "rose"
+                      ? "#f43f5e"
+                      : data.accent === "emerald"
+                        ? "#10b981"
+                        : data.accent === "orange"
+                          ? "#f97316"
+                          : "#e9c349";
 
               return (
                 <div
@@ -528,7 +526,7 @@ const Home = () => {
               href="/awards"
               className="inline-flex items-center gap-2 px-8 py-3 border border-[#9b8aa8] text-[#9b8aa8] ff-body text-sm tracking-[0.2em] uppercase hover:bg-[#9b8aa8] hover:text-white transition-all duration-300 rounded-sm"
             >
-              View All Categories <span>→</span>
+              View All Categories <span>&rarr;</span>
             </a>
           </div>
         </div>
@@ -567,8 +565,7 @@ const Home = () => {
                   className="absolute inset-0 w-full h-full object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
-                <div className="absolute bottom-6 left-6">
-                </div>
+                <div className="absolute bottom-6 left-6"></div>
               </div>
 
               <div
@@ -584,8 +581,7 @@ const Home = () => {
                   className="absolute inset-0 w-full h-full object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
-                <div className="absolute bottom-6 left-6">
-                </div>
+                <div className="absolute bottom-6 left-6"></div>
               </div>
             </div>
           </div>
@@ -654,21 +650,23 @@ const Home = () => {
               </h2>
               <ul>
                 {aromasData.map((aroma) => (
-                  <li
-                    key={aroma.id}
-                    className="flex items-start justify-between gap-5 border-b border-[#4b4454] py-3"
-                  >
-                    <div className="min-w-0">
-                      <h3 className="ff-display text-base text-[#e5e2e1] mb-0.5">
-                        {aroma.name}
-                      </h3>
-                      <p className="ff-body text-[13px] text-[#968d9f] font-light leading-snug line-clamp-2">
-                        {aroma.desc}
-                      </p>
-                    </div>
-                    <span className="ff-body shrink-0 pt-0.5 text-[10px] uppercase tracking-[0.2em] text-[#e9c349]">
-                      [ 50 ML ]
-                    </span>
+                  <li key={aroma.id}>
+                    <Link
+                      to={`/isolates/${aroma.name.toLowerCase().replace(/\s+/g, "-")}`}
+                      className="flex items-start justify-between gap-5 border-b border-[#4b4454] py-3 group hover:border-[#e9c349]/40 transition-colors duration-300"
+                    >
+                      <div className="min-w-0">
+                        <h3 className="ff-display text-base text-[#e5e2e1] mb-0.5 group-hover:text-[#e9c349] transition-colors duration-300">
+                          {aroma.name}
+                        </h3>
+                        <p className="ff-body text-[13px] text-[#968d9f] font-light leading-snug line-clamp-2">
+                          {aroma.desc}
+                        </p>
+                      </div>
+                      <span className="ff-body shrink-0 pt-0.5 text-[10px] uppercase tracking-[0.2em] text-[#e9c349]">
+                        [ 50 ML ]
+                      </span>
+                    </Link>
                   </li>
                 ))}
               </ul>

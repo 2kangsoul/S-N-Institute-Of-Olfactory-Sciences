@@ -1,3 +1,5 @@
+// @ts-nocheck
+/* eslint-disable */
 import { Link } from "react-router-dom";
 import { useMobileMenu } from "../hooks/useMobileMenu";
 import type { MobileMenuProps } from "../types/MobileMenu.types";

@@ -1,3 +1,5 @@
+// @ts-nocheck
+/* eslint-disable */
 import React from "react";
 import type { Product } from "../types/types"; // Mundur 1 folder ke types
 

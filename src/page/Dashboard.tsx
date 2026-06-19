@@ -40,6 +40,22 @@ async function fetchDashboardData() {
   let chartData = [];
   let sessionsData = { total: 0, trend: "0%", isPositive: true, chartData: [] };
 
+  // ✅ NEW: Monthly Users realtime overview (device + country + total)
+  let monthlyUsersOverview = {
+    totalUsers: 0,
+    byDevice: [],
+    byCountry: [],
+    lastUpdated: "",
+  };
+  // ✅ NEW: Monthly Users summary (KPI: growth %, newUsersThisMonth, etc.)
+  let monthlyUsersSummary = {
+    totalUsers: 0,
+    newUsersThisMonth: 0,
+    newUsersLastMonth: 0,
+    growthPercentage: 0,
+    activeUsers: 0,
+  };
+
   try {
     const [
       pageviewsRes,
@@ -49,6 +65,8 @@ async function fetchDashboardData() {
       signUpsRes,
       chartRes,
       sessionsRes,
+      monthlyOverviewRes, // ✅ NEW
+      monthlySummaryRes, // ✅ NEW
     ] = await Promise.all([
       apiClient.get("/analytics/pageviews"),
       apiClient.get("/subscriptions/data"),
@@ -57,6 +75,8 @@ async function fetchDashboardData() {
       apiClient.get("/signups/data"),
       apiClient.get("/expenses/chart"),
       apiClient.get("/analytics/sessions"),
+      apiClient.get("/monthly-users/realtime"), // ✅ NEW
+      apiClient.get("/monthly-users/summary"), // ✅ NEW
     ]);
     pageviewsData = pageviewsRes.data?.data || pageviewsData;
     subscriptionsData = subscriptionsRes.data?.data || subscriptionsData;
@@ -65,6 +85,9 @@ async function fetchDashboardData() {
     newSignUpsData = signUpsRes.data?.data || newSignUpsData;
     chartData = chartRes.data?.data || chartData;
     sessionsData = sessionsRes.data?.data || sessionsData;
+    monthlyUsersOverview =
+      monthlyOverviewRes.data?.data || monthlyUsersOverview; // ✅ NEW
+    monthlyUsersSummary = monthlySummaryRes.data?.data || monthlyUsersSummary; // ✅ NEW
   } catch (error) {
     console.error("Gagal mengambil data API:", error);
   }
@@ -88,6 +111,8 @@ async function fetchDashboardData() {
     newSignUps: newSignUpsData,
     chartData,
     sessions: sessionsData,
+    monthlyUsersOverview, // ✅ NEW: { totalUsers, byDevice, byCountry, lastUpdated }
+    monthlyUsersSummary, // ✅ NEW: { totalUsers, newUsersThisMonth, growthPercentage, ... }
   };
 }
 
@@ -751,18 +776,57 @@ export default function Dashboard() {
     sessions: Math.round(Math.random() * 100 + 80),
   }));
 
-  const deviceChartData = data?.deviceData?.map((d, i) => ({
-    name: d.device || "Unknown",
-    value: d._count.device,
-  })) || [
-    { name: "Desktop", value: 15624 },
-    { name: "Phone app", value: 5548 },
-    { name: "Laptop", value: 2478 },
-  ];
+  // ✅ UPDATED: Prioritaskan data dari /monthly-users/realtime (byDevice)
+  // Fallback ke data lama (data?.deviceData) jika API baru belum ada datanya
+  const deviceChartData = data?.monthlyUsersOverview?.byDevice?.length
+    ? data.monthlyUsersOverview.byDevice.map((d) => ({
+        name: d.deviceType,
+        value: d.count,
+      }))
+    : data?.deviceData?.map((d) => ({
+        name: d.device || "Unknown",
+        value: d._count.device,
+      })) || [
+        { name: "Desktop", value: 15624 },
+        { name: "Phone app", value: 5548 },
+        { name: "Laptop", value: 2478 },
+      ];
 
-  const totalDeviceUsers = deviceChartData.reduce((s, d) => s + d.value, 0);
+  // ✅ UPDATED: Prioritaskan totalUsers dari /monthly-users/realtime
+  const totalDeviceUsers =
+    data?.monthlyUsersOverview?.totalUsers ||
+    deviceChartData.reduce((s, d) => s + d.value, 0);
 
-  const countryData = data?.countryData || [];
+  // ✅ UPDATED: Prioritaskan byCountry dari /monthly-users/realtime
+  // Fallback ke data lama (data?.countryData) jika API baru belum ada datanya
+  const countryData = data?.monthlyUsersOverview?.byCountry?.length
+    ? data.monthlyUsersOverview.byCountry.map((c) => ({
+        name: c.country,
+        count: c.count,
+        percentage: c.percentage,
+      }))
+    : data?.countryData?.length
+      ? data.countryData.map((c) => ({
+          name: c.country,
+          count: c._count?.country ?? c.count ?? 0,
+          percentage: null,
+        }))
+      : [
+          { name: "United States", count: 30, percentage: 27 },
+          { name: "United Kingdom", count: 25, percentage: 23 },
+          { name: "Canada", count: 25, percentage: 23 },
+          { name: "Australia", count: 15, percentage: 14 },
+          { name: "Spain", count: 15, percentage: 14 },
+        ];
+
+  // ✅ UPDATED: Growth badge pakai growthPercentage dari /monthly-users/summary
+  const growthValue = data?.monthlyUsersSummary?.newUsersThisMonth
+    ? `↑ ${formatNumber(data.monthlyUsersSummary.newUsersThisMonth)}`
+    : "↑ 1.86K";
+  const isGrowthPositive =
+    data?.monthlyUsersSummary?.growthPercentage !== undefined
+      ? data.monthlyUsersSummary.growthPercentage >= 0
+      : true;
 
   if (isLoading) {
     return (
@@ -1326,7 +1390,7 @@ export default function Dashboard() {
           </table>
         </div>
 
-        {/* Reports Overview */}
+        {/* Reports Overview — ✅ UPDATED: real data dari /monthly-users/realtime */}
         <div
           style={{
             background: "#161b2e",
@@ -1398,6 +1462,7 @@ export default function Dashboard() {
                   textAlign: "center",
                 }}
               >
+                {/* ✅ UPDATED: totalDeviceUsers dari API realtime */}
                 <div
                   style={{ fontSize: "13px", fontWeight: 500, color: "#fff" }}
                 >
@@ -1408,6 +1473,7 @@ export default function Dashboard() {
             </div>
 
             <div style={{ flex: 1 }}>
+              {/* ✅ UPDATED: deviceChartData dari API realtime */}
               {deviceChartData.map((d, i) => (
                 <div key={i} style={{ marginBottom: "10px" }}>
                   <div
@@ -1479,23 +1545,15 @@ export default function Dashboard() {
             <div
               style={{ display: "flex", flexDirection: "column", gap: "8px" }}
             >
-              {(countryData.length
-                ? countryData.map((c) => ({
-                    name: c.country,
-                    count: c._count.country,
-                  }))
-                : [
-                    { name: "United States", count: 30 },
-                    { name: "United Kingdom", count: 25 },
-                    { name: "Canada", count: 25 },
-                    { name: "Australia", count: 15 },
-                    { name: "Spain", count: 15 },
-                  ]
-              ).map((c, i) => {
-                const total = countryData.length
-                  ? countryData.reduce((s, x) => s + x._count.country, 0)
-                  : 110;
-                const pct = Math.round((c.count / total) * 100);
+              {/* ✅ UPDATED: countryData dari API realtime */}
+              {countryData.map((c, i) => {
+                const total = countryData.reduce((s, x) => s + x.count, 0);
+                const pct =
+                  c.percentage !== null && c.percentage !== undefined
+                    ? Math.round(c.percentage)
+                    : total > 0
+                      ? Math.round((c.count / total) * 100)
+                      : 0;
                 return (
                   <div key={i}>
                     <div
@@ -1541,19 +1599,26 @@ export default function Dashboard() {
                 justifyContent: "space-between",
               }}
             >
+              {/* ✅ UPDATED: total & growth badge dari API summary */}
               <div style={{ fontSize: "16px", fontWeight: 500, color: "#fff" }}>
-                {formatNumber(data?.monthlyUsers?.total || 12400)}
+                {formatNumber(
+                  data?.monthlyUsersSummary?.totalUsers ||
+                    data?.monthlyUsers?.total ||
+                    12400,
+                )}
                 <span
                   style={{
                     fontSize: "10px",
                     marginLeft: "6px",
                     padding: "2px 6px",
                     borderRadius: "4px",
-                    background: "rgba(16,185,129,0.15)",
-                    color: "#10b981",
+                    background: isGrowthPositive
+                      ? "rgba(16,185,129,0.15)"
+                      : "rgba(239,68,68,0.15)",
+                    color: isGrowthPositive ? "#10b981" : "#ef4444",
                   }}
                 >
-                  ↑ 1.86K
+                  {growthValue}
                 </span>
               </div>
               <button

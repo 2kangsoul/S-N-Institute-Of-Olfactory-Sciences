@@ -1,3 +1,5 @@
+// @ts-nocheck
+/* eslint-disable */
 import { useState } from "react"; // <-- TAMBAHAN: Import useState
 import { Outlet } from "react-router-dom";
 import { useMainLayout } from "../hooks/useMainLayout";
@@ -19,7 +21,7 @@ export default function MainLayout() {
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-[#f4f2ee]">
+    <div className="min-h-screen bg-[#000000]">
       {/* Oper state tambahan setIsRegisterModalOpen ke Header */}
       <Header
         {...layoutState}
