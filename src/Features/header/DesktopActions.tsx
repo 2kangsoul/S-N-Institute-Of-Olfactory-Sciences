@@ -39,7 +39,7 @@ export default function DesktopActions(props: DesktopActionsProps) {
                 // Menutup menu Manage jika sedang terbuka
                 if (setIsManageMenuOpen) setIsManageMenuOpen(false);
               }}
-              className="text-sm font-medium text-gray-800 hover:text-gray-600 flex items-center gap-1 cursor-pointer"
+              className="text-sm font-medium text-gray-100 hover:text-gray-200 flex items-center gap-1 cursor-pointer"
             >
               Hai, {user?.name || user?.fullname || "..."}
               {/* Lingkaran Foto Profil - DITAMBAHKAN SESUAI PERMINTAAN */}
@@ -109,7 +109,7 @@ export default function DesktopActions(props: DesktopActionsProps) {
                   // Menutup menu Account jika sedang terbuka
                   setIsAccountMenuOpen(false);
                 }}
-                className="flex items-center gap-1 px-3 py-1 bg-gray-900 text-white font-bold hover:bg-gray-800 transition-colors rounded-md"
+                className="flex items-center gap-1 px-3 py-1 bg-gray-100 text-black font-bold hover:bg-gray-200 transition-colors rounded-md"
               >
                 Manage
                 <svg
@@ -178,7 +178,7 @@ export default function DesktopActions(props: DesktopActionsProps) {
 
           <button
             onClick={logout}
-            className="px-3 py-1 text-red-500 font-bold hover:bg-red-50 hover:text-red-700 transition-colors rounded-md"
+            className="px-3 py-1 text-red-500 font-bold bg-gray-100 hover:bg-red-100 hover:text-red-700 transition-colors rounded-md"
           >
             Logout
           </button>

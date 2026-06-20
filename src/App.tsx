@@ -19,8 +19,9 @@ import NicheGuide from "./page/niche";
 import AboutUs from "./page/AboutUs";
 import NotFound from "./page/NotFound";
 import Dashboard from "../src/page/Dashboard";
-import Awards from "./page/Awards"
+import Awards from "./page/Awards";
 import AwardsCategory from "./page/AwardsCategory";
+import PerfumeProgram from "./page/PerfumeProgram";
 
 function App() {
   const { fetchCurrentUser } = useAuthStore();
@@ -63,13 +64,13 @@ function App() {
           <Route path="/niche" element={<NicheGuide />} />
           <Route path="/aboutus" element={<AboutUs />} />
           <Route path="/awards" element={<Awards />} /> {/* ✅ Tambahan baru */}
-          <Route path="/awards/:category" element={<AwardsCategory />} /> {/* ✅ Tambahan baru */}
-
+          <Route path="/awards/:category" element={<AwardsCategory />} />{" "}
+          {/* ✅ Tambahan baru */}
+          <Route path="/program" element={<PerfumeProgram />} />
           {/* Rute Terlindungi (Wajib Login, dicegat oleh AuthLayout) */}
           <Route element={<AuthLayout />}>
             <Route path="/products" element={<Products />} />
           </Route>
-
           {/* RUTE FALLBACK */}
           <Route path="*" element={<NotFound />} />
         </Route>

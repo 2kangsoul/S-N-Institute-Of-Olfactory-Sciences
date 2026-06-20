@@ -1,7 +1,8 @@
 // @ts-nocheck
 /* eslint-disable */
-import { useState, useEffect } from "react"
+import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
+import toast from "react-hot-toast";
 import apiClient from "../config/api";
 import { useAuthStore } from "../stores/useAuthStore";
 
@@ -39,19 +40,24 @@ const AwardsCategory = () => {
   // Check which perfumes user already liked
   useEffect(() => {
     if (!isAuthenticated || perfumes.length === 0) return;
-    perfumes.forEach(async (p) => {
-      try {
-        const res = await apiClient.get(`/perfumes/${p.id}/liked`);
-        if (res.data?.data?.liked) {
-          setLikedIds((prev) => new Set([...prev, p.id]));
+
+    const checkLiked = async () => {
+      const results = await Promise.allSettled(
+        perfumes.map((p) => apiClient.get(`/perfumes/${p.id}/liked`)),
+      );
+      results.forEach((result, i) => {
+        if (result.status === "fulfilled" && result.value.data?.data?.liked) {
+          setLikedIds((prev) => new Set([...prev, perfumes[i].id]));
         }
-      } catch {}
-    });
+      });
+    };
+
+    checkLiked();
   }, [perfumes, isAuthenticated]);
 
   const handleLike = async (perfumeId: string) => {
     if (!isAuthenticated) {
-      alert("Silakan login untuk memberikan like.");
+      toast.error("Silakan login untuk memberikan like.");
       return;
     }
     try {

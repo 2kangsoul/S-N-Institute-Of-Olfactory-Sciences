@@ -1,4 +1,5 @@
 import axios from "axios";
+import toast from "react-hot-toast";
 
 // Mengarah ke backend lokal Express.js
 const API_URL = "http://localhost:8000/api";
@@ -55,12 +56,13 @@ apiClient.interceptors.response.use(
       if (
         status === 401 &&
         !error.config?.url?.includes("/auth/login") &&
+        !error.config?.url?.includes("/liked") &&
         !window.location.pathname.includes("/login")
       ) {
         console.warn("Sesi habis atau token tidak valid. Membersihkan sesi...");
 
         localStorage.removeItem("auth-storage");
-        alert(
+        toast.error(
           "Sesi login Anda telah berakhir demi keamanan. Silakan login kembali.",
         );
         window.location.href = "/";
