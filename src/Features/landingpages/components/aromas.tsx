@@ -3,8 +3,9 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Link } from "react-router-dom";
 import heroBackgroundVideo from "../../../../public/Guerlain.mp4";
-import { aromasData } from "../types/aromasData";
+// import { aromasData } from "../types/aromasData";
 import { testimonialsData } from "../types/testimonialsData";
+// import { aromasData } from "../../../data/aromasData";
 
 // ─── Fragrance side images for hero bento animation ─────────────────────────
 const heroSideImages = [
@@ -169,7 +170,7 @@ const Home = () => {
       const scrollableHeight = window.innerHeight * 2;
       const scrolled = -rect.top;
       setHeroScrollProgress(
-        Math.max(0, Math.min(1, scrolled / scrollableHeight))
+        Math.max(0, Math.min(1, scrolled / scrollableHeight)),
       );
     };
     window.addEventListener("scroll", handleScroll, { passive: true });
@@ -180,7 +181,7 @@ const Home = () => {
   const textOpacity = Math.max(0, 1 - heroScrollProgress / 0.2);
   const imageProgress = Math.max(
     0,
-    Math.min(1, (heroScrollProgress - 0.2) / 0.8)
+    Math.min(1, (heroScrollProgress - 0.2) / 0.8),
   );
   const centerWidth = 100 - imageProgress * 58;
   const centerHeight = 100 - imageProgress * 30;
@@ -265,7 +266,7 @@ const Home = () => {
       const viewportWidth = window.innerWidth;
       const viewportHeight = window.innerHeight;
       setGalleryHeight(
-        `${viewportHeight + (containerWidth - viewportWidth)}px`
+        `${viewportHeight + (containerWidth - viewportWidth)}px`,
       );
     };
     const timer = setTimeout(calculateHeight, 100);
@@ -312,7 +313,7 @@ const Home = () => {
           }
         });
       },
-      { threshold: 0.15 }
+      { threshold: 0.15 },
     );
     els.forEach((el) => observer.observe(el));
     return () => observer.disconnect();
@@ -498,14 +499,14 @@ const Home = () => {
                 data.accent === "amber"
                   ? "#f59e0b"
                   : data.accent === "violet"
-                  ? "#8b5cf6"
-                  : data.accent === "rose"
-                  ? "#f43f5e"
-                  : data.accent === "emerald"
-                  ? "#10b981"
-                  : data.accent === "orange"
-                  ? "#f97316"
-                  : "#e9c349";
+                    ? "#8b5cf6"
+                    : data.accent === "rose"
+                      ? "#f43f5e"
+                      : data.accent === "emerald"
+                        ? "#10b981"
+                        : data.accent === "orange"
+                          ? "#f97316"
+                          : "#e9c349";
 
               return (
                 <div
@@ -619,8 +620,7 @@ const Home = () => {
                   className="absolute inset-0 w-full h-full object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
-                <div className="absolute bottom-6 left-6">
-                </div>
+                <div className="absolute bottom-6 left-6"></div>
               </div>
 
               <div
@@ -636,8 +636,7 @@ const Home = () => {
                   className="absolute inset-0 w-full h-full object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
-                <div className="absolute bottom-6 left-6">
-                </div>
+                <div className="absolute bottom-6 left-6"></div>
               </div>
             </div>
           </div>
@@ -707,20 +706,27 @@ const Home = () => {
               <ul>
                 {aromasData.map((aroma) => (
                   <li
-                    key={aroma.id}
-                    className="flex items-start justify-between gap-5 border-b border-[#4b4454] py-3"
+                    key={aroma.slug}
+                    className="border-b border-[#4b4454] py-3"
                   >
-                    <div className="min-w-0">
-                      <h3 className="ff-display text-base text-[#e5e2e1] mb-0.5">
-                        {aroma.name}
-                      </h3>
-                      <p className="ff-body text-[13px] text-[#968d9f] font-light leading-snug line-clamp-2">
-                        {aroma.desc}
-                      </p>
-                    </div>
-                    <span className="ff-body shrink-0 pt-0.5 text-[10px] uppercase tracking-[0.2em] text-[#e9c349]">
-                      [ 50 ML ]
-                    </span>
+                    <Link
+                      to={`/aroma/${aroma.slug}`}
+                      className="flex items-start justify-between gap-5"
+                    >
+                      <div className="min-w-0">
+                        <h3 className="ff-display text-base text-[#e5e2e1] mb-0.5">
+                          {aroma.name}
+                        </h3>
+
+                        <p className="ff-body text-[13px] text-[#968d9f] font-light leading-snug line-clamp-2">
+                          {aroma.description}
+                        </p>
+                      </div>
+
+                      <span className="ff-body shrink-0 pt-0.5 text-[10px] uppercase tracking-[0.2em] text-[#e9c349]">
+                        [ 50 ML ]
+                      </span>
+                    </Link>
                   </li>
                 ))}
               </ul>

@@ -1,7 +1,9 @@
-import { useParams, Link } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { aromasData } from "../Features/landingpages/types/aromasData";
+
 export default function AromaDetail() {
   const { slug } = useParams();
+
   const aroma = aromasData.find((item) => item.slug === slug);
 
   if (!aroma) {
@@ -20,7 +22,6 @@ export default function AromaDetail() {
 
       <div className="container mx-auto px-6">
         <div className="grid lg:grid-cols-2 gap-16 items-center">
-
           {/* IMAGE */}
           <div className="group relative flex justify-center">
             <div className="absolute w-72 h-72 rounded-full bg-yellow-600/20 blur-3xl group-hover:scale-110 transition-all duration-700" />
@@ -70,9 +71,8 @@ export default function AromaDetail() {
               Explore Notes
             </button>
           </div>
-
         </div>
       </div>
     </section>
-  )
+  );
 }

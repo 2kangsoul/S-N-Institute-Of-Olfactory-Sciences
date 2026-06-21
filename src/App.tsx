@@ -22,6 +22,11 @@ import Dashboard from "../src/page/Dashboard";
 import Awards from "./page/Awards";
 import AwardsCategory from "./page/AwardsCategory";
 import PerfumeProgram from "./page/PerfumeProgram";
+// import AromaDetail from "./page/IrisFowerNicho";
+// import IrisFlower from "./page/IrisFowerNicho";
+// import IsolateDetail from "./page/isolateDetail";import AromaDetail from "./page/IrisFowerNicho";
+import AromaDetail from "./page/IrisFowerNicho";
+
 
 function App() {
   const { fetchCurrentUser } = useAuthStore();
@@ -62,9 +67,12 @@ function App() {
           <Route path="/team" element={<Team />} />
           <Route path="/blog" element={<Blog />} />
           <Route path="/niche" element={<NicheGuide />} />
+          <Route path="/niche" element={<NicheGuide />} />
           <Route path="/aboutus" element={<AboutUs />} />
           <Route path="/awards" element={<Awards />} /> {/* ✅ Tambahan baru */}
           <Route path="/awards/:category" element={<AwardsCategory />} />{" "}
+          {/* <Route path="/isolates/iris-flower" element={<IrisFlower />} /> */}
+          <Route path="/isolates/:slug" element={<AromaDetail />} />
           {/* ✅ Tambahan baru */}
           <Route path="/program" element={<PerfumeProgram />} />
           {/* Rute Terlindungi (Wajib Login, dicegat oleh AuthLayout) */}

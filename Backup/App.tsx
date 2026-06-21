@@ -203,7 +203,7 @@ function App() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-12">
-            {aromasData.map((aroma) => (
+            {/* {aromasData.map((aroma) => (
               <AromaCard
                 key={aroma.id}
                 id={aroma.id}
@@ -211,7 +211,7 @@ function App() {
                 desc={aroma.desc}
                 imageUrl={aroma.imageUrl}
               />
-            ))}
+            ))} */}
           </div>
         </div>
       </section>
