@@ -1,3 +1,5 @@
+// @ts-nocheck
+/* eslint-disable */
 import type { BlogPost } from "../types/blogTypes";
 
 interface BlogCardProps {

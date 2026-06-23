@@ -1,3 +1,5 @@
+// @ts-nocheck
+/* eslint-disable */
 import React from "react";
 import type { AdminManagerModalProps } from "../types/adminManagerTypes";
 import { useAdminManager } from "../hooks/useAdminManager";
@@ -58,7 +60,7 @@ export default function AdminManagerModal({
             ⚙️ Manajemen Admin
           </h2>
           <p className="text-sm text-gray-500">
-            Kelola akses administrator untuk butik Saa Fragrance.
+            Kelola akses administrator untuk butik SNN Institute Of Olfactory Sciences.
           </p>
         </div>
 

@@ -2,6 +2,7 @@
 /* eslint-disable */
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
 import heroBackgroundVideo from "../../../../public/Guerlain.mp4";
 import { aromasData } from "../types/aromasData";
 import { testimonialsData } from "../types/testimonialsData";
@@ -740,23 +741,217 @@ const Home = () => {
       {/* ══════════════════════════════════════════════════════════════════ */}
       {/* SECTION 7 — TESTIMONIAL BANNER                                    */}
       {/* ══════════════════════════════════════════════════════════════════ */}
-      <section className="w-full bg-[#131313] pb-24">
-        <div className="max-w-4xl mx-auto px-6">
-          <div className="border border-[#d5bbff]/20 bg-[#0e0e0e] px-8 py-14 md:px-16 md:py-16 text-center">
-            <span className="ff-display block text-5xl leading-none text-[#d5bbff]/40 mb-4">
-              &ldquo;
-            </span>
-            <blockquote className="ff-display italic text-xl md:text-2xl text-[#cdc3d6] leading-relaxed max-w-2xl mx-auto">
-              {featuredTestimonial?.text}
-            </blockquote>
-            <p className="ff-body mt-8 text-xs uppercase tracking-[0.25em] text-[#e9c349]">
-              {featuredTestimonial?.name}
-              {featuredTestimonial?.role
-                ? ` — ${featuredTestimonial.role}`
-                : ""}
-            </p>
+      <section className="w-full bg-[#131313] px-6 pb-24 md:px-12 lg:px-20">
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.3 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          className="mx-auto grid max-w-6xl items-center gap-12 overflow-hidden border border-[#d5bbff]/20 bg-[#0e0e0e] px-6 py-14 md:grid-cols-[0.9fr_1.1fr] md:px-12 md:py-16 lg:px-16"
+        >
+          <div>
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.3 }}
+              transition={{ duration: 0.7, delay: 0.1, ease: "easeOut" }}
+              className="ff-body mb-4 text-[0.65rem] uppercase tracking-[0.35em] text-[#d5bbff]"
+            >
+              Signature Profile
+            </motion.p>
+            <motion.h2
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.3 }}
+              transition={{ duration: 0.8, delay: 0.18, ease: "easeOut" }}
+              className="ff-display text-3xl leading-tight text-white md:text-5xl"
+            >
+              The Olfactory Blueprint
+            </motion.h2>
+            <motion.p
+              initial={{ opacity: 0, y: 22 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.3 }}
+              transition={{ duration: 0.8, delay: 0.28, ease: "easeOut" }}
+              className="ff-body mt-6 max-w-md text-sm leading-relaxed text-[#cdc3d6] md:text-base"
+            >
+              A signature fragrance is engineered through precise molecular
+              balance, where radiant citrus, refined florals, warm woods, and
+              shadowed spices are calibrated into one seamless atmospheric
+              impression.
+            </motion.p>
+            <motion.div
+              initial={{ opacity: 0, y: 18 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.3 }}
+              transition={{ duration: 0.7, delay: 0.38, ease: "easeOut" }}
+              className="mt-8 grid grid-cols-2 gap-3 ff-body text-[0.65rem] uppercase tracking-[0.22em] text-[#cdc3d6]"
+            >
+              {[
+                ["Molecular", "92%"],
+                ["Floral", "74%"],
+                ["Woody", "86%"],
+                ["Citrus", "64%"],
+              ].map(([label, value]) => (
+                <div
+                  key={label}
+                  className="border border-[#d5bbff]/10 bg-[#131313] px-4 py-3"
+                >
+                  <span className="block text-[#d5bbff]">{value}</span>
+                  <span className="mt-1 block text-[#cdc3d6]/70">{label}</span>
+                </div>
+              ))}
+            </motion.div>
           </div>
-        </div>
+
+          <motion.div
+            initial={{ opacity: 0, scale: 0.94 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ duration: 0.8, delay: 0.18, ease: "easeOut" }}
+            className="relative mx-auto aspect-square w-full max-w-[28rem]"
+          >
+            <div className="absolute inset-6 rounded-full bg-[#e9c349]/5 blur-3xl" />
+            <svg
+              viewBox="0 0 420 420"
+              role="img"
+              aria-label="Interactive scent profile radar chart"
+              className="relative z-10 h-full w-full overflow-visible"
+            >
+              <defs>
+                <radialGradient id="scentRadarGlow" cx="50%" cy="50%" r="50%">
+                  <stop offset="0%" stopColor="#e9c349" stopOpacity="0.32" />
+                  <stop offset="68%" stopColor="#e9c349" stopOpacity="0.1" />
+                  <stop offset="100%" stopColor="#e9c349" stopOpacity="0" />
+                </radialGradient>
+              </defs>
+
+              {[54, 86, 118, 150].map((radius, index) => (
+                <motion.circle
+                  key={radius}
+                  cx="210"
+                  cy="210"
+                  r={radius}
+                  fill="none"
+                  stroke="#d5bbff"
+                  strokeOpacity={0.08 + index * 0.035}
+                  strokeWidth="1"
+                  initial={{ pathLength: 0, opacity: 0 }}
+                  whileInView={{ pathLength: 1, opacity: 1 }}
+                  viewport={{ once: true, amount: 0.3 }}
+                  transition={{ duration: 1, delay: 0.15 + index * 0.08 }}
+                />
+              ))}
+
+              {[
+                [210, 60],
+                [340, 135],
+                [340, 285],
+                [210, 360],
+                [80, 285],
+                [80, 135],
+              ].map(([x, y], index) => (
+                <motion.line
+                  key={`${x}-${y}`}
+                  x1="210"
+                  y1="210"
+                  x2={x}
+                  y2={y}
+                  stroke="#d5bbff"
+                  strokeOpacity="0.16"
+                  strokeWidth="1"
+                  initial={{ pathLength: 0 }}
+                  whileInView={{ pathLength: 1 }}
+                  viewport={{ once: true, amount: 0.3 }}
+                  transition={{ duration: 0.9, delay: 0.25 + index * 0.05 }}
+                />
+              ))}
+
+              <circle cx="210" cy="210" r="154" fill="url(#scentRadarGlow)" />
+
+              <motion.polygon
+                points="210,72 308,153 321,274 210,318 107,270 92,142"
+                fill="#e9c349"
+                fillOpacity="0.18"
+                stroke="#e9c349"
+                strokeWidth="2"
+                strokeLinejoin="round"
+                initial={{ scale: 0, opacity: 0 }}
+                whileInView={{ scale: 1, opacity: 1 }}
+                viewport={{ once: true, amount: 0.3 }}
+                transition={{ duration: 1, delay: 0.35, ease: [0.22, 1, 0.36, 1] }}
+                style={{ originX: "210px", originY: "210px" }}
+              />
+
+              <motion.polygon
+                points="210,72 308,153 321,274 210,318 107,270 92,142"
+                fill="none"
+                stroke="#e9c349"
+                strokeWidth="3"
+                strokeLinejoin="round"
+                initial={{ pathLength: 0 }}
+                whileInView={{ pathLength: 1 }}
+                viewport={{ once: true, amount: 0.3 }}
+                transition={{ duration: 1.25, delay: 0.55, ease: "easeInOut" }}
+              />
+
+              {[
+                [210, 72, "92"],
+                [308, 153, "74"],
+                [321, 274, "86"],
+                [210, 318, "72"],
+                [107, 270, "58"],
+                [92, 142, "69"],
+              ].map(([x, y, value], index) => (
+                <motion.g
+                  key={`${x}-${y}-${value}`}
+                  initial={{ scale: 0, opacity: 0 }}
+                  whileInView={{ scale: 1, opacity: 1 }}
+                  viewport={{ once: true, amount: 0.3 }}
+                  transition={{ duration: 0.45, delay: 0.85 + index * 0.08 }}
+                  style={{ transformOrigin: `${x}px ${y}px` }}
+                >
+                  <circle cx={x} cy={y} r="5" fill="#e9c349" />
+                  <circle cx={x} cy={y} r="10" fill="#e9c349" opacity="0.14" />
+                </motion.g>
+              ))}
+
+              {[
+                [210, 32, "Molecular", "middle"],
+                [364, 123, "Floral", "start"],
+                [365, 302, "Woody", "start"],
+                [210, 390, "Citrus", "middle"],
+                [55, 302, "Spicy", "end"],
+                [56, 123, "Oriental", "end"],
+              ].map(([x, y, label, anchor], index) => (
+                <motion.text
+                  key={label}
+                  x={x}
+                  y={y}
+                  textAnchor={anchor}
+                  className="ff-body fill-[#cdc3d6] text-[13px] uppercase tracking-[0.18em]"
+                  initial={{ opacity: 0, y: 8 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, amount: 0.3 }}
+                  transition={{ duration: 0.5, delay: 0.75 + index * 0.06 }}
+                >
+                  {label}
+                </motion.text>
+              ))}
+
+              <motion.circle
+                cx="210"
+                cy="210"
+                r="5"
+                fill="#d5bbff"
+                initial={{ scale: 0, opacity: 0 }}
+                whileInView={{ scale: 1, opacity: 1 }}
+                viewport={{ once: true, amount: 0.3 }}
+                transition={{ duration: 0.45, delay: 0.65 }}
+              />
+            </svg>
+          </motion.div>
+        </motion.div>
       </section>
 
       {/* ══════════════════════════════════════════════════════════════════ */}

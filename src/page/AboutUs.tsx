@@ -10,13 +10,13 @@ export default function AboutUs() {
       <div className="relative w-full h-[50vh] min-h-[400px] flex items-center justify-center overflow-hidden bg-black">
         <img
           src="/FotoAboutUs.png"
-          alt="Saa Fragrance Hero"
+          alt="SNN Institute Of Olfactory Sciences Hero"
           className="absolute inset-0 w-full h-full object-cover object-[center_30%] opacity-68"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
         <div className="relative z-10 text-center px-4 max-w-4xl mx-auto mt-12">
           <h1 className="text-4xl md:text-6xl font-serif font-bold text-white mb-4 tracking-wide">
-            Tentang Saa Fragrance
+            Tentang SNN Institute Of Olfactory Sciences
           </h1>
           <p className="text-lg md:text-2xl text-gray-200 italic font-serif">
             "Wewangian yang Berbicara, Pengalaman yang Nyata."
@@ -56,7 +56,7 @@ export default function AboutUs() {
       <div className="bg-gray-100 dark:bg-[#25273D] py-20 transition-colors duration-300">
         <div className="max-w-6xl mx-auto px-6">
           <h2 className="text-3xl md:text-4xl font-serif font-bold text-center text-gray-900 dark:text-white mb-16">
-            Mengapa Memilih Saa Fragrance?
+            Mengapa Memilih SNN Institute Of Olfactory Sciences?
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -153,7 +153,7 @@ export default function AboutUs() {
           <div className="relative rounded-2xl overflow-hidden shadow-2xl aspect-square md:aspect-video lg:aspect-square">
             <img
               src="https://images.unsplash.com/photo-1616401784845-180882ba9ba8?q=80&w=1000"
-              alt="Pendekatan Saa Fragrance"
+              alt="Pendekatan SNN Institute Of Olfactory Sciences"
               className="absolute inset-0 w-full h-full object-cover"
             />
           </div>

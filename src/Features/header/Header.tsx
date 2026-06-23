@@ -33,7 +33,7 @@ export default function Header(props: HeaderProps) {
         <Link to="/" className="flex-shrink-0">
           <img
             src="/SNN.jpeg"
-            alt="Saa Fragrance Logo"
+            alt="SNN Institute Of Olfactory Sciences Logo"
             className="h-10 transition duration-300 hover:brightness-110 object-contain" // Sedikit diperkecil dari h-10 ke h-8 agar proporsional
           />
         </Link>

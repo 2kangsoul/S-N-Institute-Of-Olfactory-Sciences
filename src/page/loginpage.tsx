@@ -7,7 +7,7 @@ import * as z from "zod";
 import { Navigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { useAuthStore } from "../stores/useAuthStore";
-import apiClient from "../config/api"; // UPDATE: Menggunakan apiClient
+import apiClient from "../config/api";
 
 const loginSchema = z.object({
   email: z
@@ -22,8 +22,6 @@ type LoginFormInputs = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
-
-  // Panggil setAuth DAN isAuthenticated dari Zustand
   const { setAuth, isAuthenticated } = useAuthStore();
 
   const {
@@ -36,7 +34,6 @@ export default function LoginPage() {
 
   const onSubmit = async (data: LoginFormInputs) => {
     try {
-      // UPDATE: Endpoint disesuaikan untuk Express.js
       const res = await apiClient.post("/auth/login", {
         emailOrUsername: data.email,
         password: data.password,
@@ -44,25 +41,52 @@ export default function LoginPage() {
 
       toast.success("Login successfully");
 
-      // UPDATE: Menyesuaikan pengambilan data dari format Express (res.data.data)
       const userData = res.data.data;
       const userRole = userData?.role || "user";
 
       setAuth({
         name: userData?.fullName || data.email.split("@")[0],
         email: userData?.email,
-        objectId: userData?.id, // ID dari MongoDB/Postgres
-        userToken: res.data.token, // Token dari Express
+        objectId: userData?.id,
+        userToken: res.data.token,
         role: userRole,
         profilePic: userData?.profilePic || "",
       });
 
-      // Pindah ke halaman utama dan MELAKUKAN FULL REFRESH
+      // ── 1. Admin / Owner ──────────────────────────────────────────────
       if (userRole === "admin" || userRole === "owner") {
         window.location.href = "/admin";
-      } else {
-        window.location.href = "/";
+        return;
       }
+
+      // ── 2. Cek apakah user punya LectureProfile ───────────────────────
+      try {
+        const lectureRes = await apiClient.get(
+          `/lectures/user/${userData?.id}`,
+        );
+        if (lectureRes.data?.data) {
+          window.location.href = "/lecture";
+          return;
+        }
+      } catch {
+        // Tidak punya lecture profile — lanjut cek student
+      }
+
+      // ── 3. Cek apakah user punya StudentProfile ───────────────────────
+      try {
+        const studentRes = await apiClient.get(
+          `/students/user/${userData?.id}`,
+        );
+        if (studentRes.data?.data) {
+          window.location.href = "/student";
+          return;
+        }
+      } catch {
+        // Tidak punya student profile — ke home
+      }
+
+      // ── 4. Default → home ─────────────────────────────────────────────
+      window.location.href = "/";
     } catch (error: any) {
       console.error("Login gagal", error);
       toast.error(
@@ -87,7 +111,6 @@ export default function LoginPage() {
         </p>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-          {/* Input Email */}
           <div>
             <label className="mb-1.5 block text-sm font-semibold text-gray-700 dark:text-gray-300">
               Email
@@ -109,7 +132,6 @@ export default function LoginPage() {
             )}
           </div>
 
-          {/* Input Password */}
           <div>
             <label className="mb-1.5 block text-sm font-semibold text-gray-700 dark:text-gray-300">
               Password
@@ -140,7 +162,6 @@ export default function LoginPage() {
             )}
           </div>
 
-          {/* Remember Me */}
           <div className="flex items-center justify-between mt-2">
             <label className="flex items-center gap-2 cursor-pointer">
               <input
@@ -160,7 +181,6 @@ export default function LoginPage() {
             </a>
           </div>
 
-          {/* Tombol Login */}
           <button
             type="submit"
             disabled={isSubmitting}

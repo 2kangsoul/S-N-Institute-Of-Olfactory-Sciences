@@ -1,6 +1,7 @@
 // @ts-nocheck
 /* eslint-disable */
 import React, { useState, useEffect, useRef } from "react";
+import { Link } from "react-router-dom";
 import {
   motion,
   useMotionValue,
@@ -9,6 +10,15 @@ import {
   AnimatePresence,
   useScroll,
 } from "framer-motion";
+import {
+  FlaskConical,
+  Microscope,
+  UserCheck,
+  Atom,
+  Globe,
+  Award,
+  X,
+} from "lucide-react";
 
 // ─── Hook: Fade-in on scroll ──────────────────────────────────────────────────
 function useFadeIn(threshold = 0.15) {
@@ -374,16 +384,19 @@ const foundationPrograms = [
     no: "01",
     title: "Sertifikasi Kompetensi Kompounding",
     desc: "Pelajari teknik pencampuran presisi dan manajemen bahan baku olfaktori sesuai standar laboratorium internasional.",
+    slug: "sertifikasi-kompetensi-kompounding-olfaktori",
   },
   {
     no: "02",
     title: "Penjaminan Mutu Olfaktori",
     desc: "Kuasai protokol Quality Control untuk memastikan integritas aroma dan stabilitas formulasi dalam skala industri.",
+    slug: "penjaminan-mutu-dan-stabilitas-formulasi",
   },
   {
     no: "03",
     title: "Evaluasi Sensorik Dasar",
     desc: "Asah indra penciuman untuk mendeteksi profil aroma kompleks melalui metodologi deskriptif dan diskriminatif.",
+    slug: "evaluasi-sensorik-dan-pemetaan-olfaktori",
   },
 ];
 
@@ -392,11 +405,13 @@ const advancedPrograms = [
     no: "04",
     title: "Rekayasa Formulasi Lanjut",
     desc: "Perancangan molekuler aroma untuk aplikasi Fine Fragrance dan Personal Care dengan pendekatan kimia hijau.",
+    slug: "rekayasa-formulasi-lanjut-skalabilitas",
   },
   {
     no: "05",
     title: "Inovasi Desain Olfaktori Lanjut",
     desc: "Integrasi AI dalam penciptaan wewangian dan strategi branding berbasis neuro-olfaktori untuk pasar global.",
+    slug: "inovasi-desain-olfaktori-lanjut",
   },
 ];
 
@@ -485,6 +500,7 @@ const timelineModules = [
     duration: "2 Minggu",
     desc: "Memahami sejarah, terminologi, dan anatomi penciuman manusia. Pengenalan 20 raw material dasar dan cara membaca formula sederhana.",
     tags: ["Teori", "Pengenalan"],
+    slug: "sertifikasi-kompetensi-kompounding-olfaktori",
   },
   {
     module: "Modul 2",
@@ -492,6 +508,7 @@ const timelineModules = [
     duration: "3 Minggu",
     desc: "Klasifikasi bahan kimia wewangian: Aldehida, Musks, Terpenes, dan Lactones. Sesi lab GC-MS pertama untuk analisis komponen aroma.",
     tags: ["Lab", "Kimia"],
+    slug: "penjaminan-mutu-dan-stabilitas-formulasi",
   },
   {
     module: "Modul 3",
@@ -499,6 +516,7 @@ const timelineModules = [
     duration: "3 Minggu",
     desc: "Praktek pencampuran skala laboratorium menggunakan timbangan analitik. Standar kebersihan dan keselamatan kerja di ruang formulasi.",
     tags: ["Praktek", "Lab"],
+    slug: "evaluasi-sensorik-dan-pemetaan-olfaktori",
   },
   {
     module: "Modul 4",
@@ -506,6 +524,7 @@ const timelineModules = [
     duration: "2 Minggu",
     desc: "Membangun komposisi Top, Heart, dan Base notes yang harmonis. Workshop merancang brief aroma pertama Anda dari konsep hingga produk.",
     tags: ["Desain", "Workshop"],
+    slug: "rekayasa-formulasi-lanjut-skalabilitas",
   },
   {
     module: "Modul 5",
@@ -513,6 +532,7 @@ const timelineModules = [
     duration: "3 Minggu",
     desc: "Metodologi blind test, panel evaluation, dan discriminative testing. Mengembangkan kemampuan deskripsi aroma secara ilmiah dan artistik.",
     tags: ["Sensorik", "Evaluasi"],
+    slug: "inovasi-desain-olfaktori-lanjut",
   },
   {
     module: "Modul 6",
@@ -520,6 +540,7 @@ const timelineModules = [
     duration: "3 Minggu",
     desc: "Merancang dan mempresentasikan formulasi parfum orisinal di hadapan panel pakar industri. Persiapan sertifikasi kompetensi akhir.",
     tags: ["Proyek", "Sertifikasi"],
+    slug: "magister-terapan-inovasi-teknologi-olfaktori",
   },
 ];
 
@@ -666,7 +687,7 @@ function TimelineSection() {
                           {mod.desc}
                         </p>
 
-                        <div className="flex gap-2 flex-wrap">
+                        <div className="flex items-center gap-3 flex-wrap">
                           {mod.tags.map((tag) => (
                             <span
                               key={tag}
@@ -682,6 +703,12 @@ function TimelineSection() {
                               {tag}
                             </span>
                           ))}
+                          <Link
+                            to={`/program/${mod.slug}`}
+                            className="ff-body text-[10px] font-semibold uppercase tracking-widest text-zinc-500 hover:text-white border-b border-transparent hover:border-white pb-0.5 transition-all duration-300 ml-1"
+                          >
+                            Lihat Silabus →
+                          </Link>
                         </div>
                       </div>
                     </div>
@@ -765,6 +792,7 @@ const ProgramPerfume = () => {
   const [activeTab, setActiveTab] = useState<"online" | "hybrid">("online");
   const [activeIntake, setActiveIntake] = useState<"aug" | "nov">("aug");
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   return (
     <>
@@ -835,10 +863,10 @@ const ProgramPerfume = () => {
             <FadeIn delay={300}>
               <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
                 {/* [5] Glow CTA Button */}
-                <button className="relative px-8 py-4 bg-zinc-200 text-black font-medium rounded-full overflow-hidden shadow-[0_0_15px_rgba(212,212,216,0.1)] hover:shadow-[0_0_30px_rgba(212,212,216,0.4)] hover:bg-white hover:scale-105 transition-all duration-300 ease-out ff-body text-xs font-semibold uppercase tracking-widest">
+                <button className="relative px-8 py-4 bg-zinc-200 text-black font-medium rounded-full overflow-hidden shadow-[0_0_15px_rgba(212,212,216,0.1)] hover:shadow-[0_0_30px_rgba(212,212,216,0.4)] hover:bg-white hover:scale-105 transition-all duration-300 ease-out ff-body text-xs font-semibold uppercase tracking-widest cursor-pointer">
                   Mulai Eksplorasi
                 </button>
-                <button className="border border-zinc-700 text-[#e5e1e4] ff-body text-xs font-semibold px-8 py-4 rounded-full uppercase tracking-widest transition-standard hover:border-white">
+                <button className="border border-zinc-700 text-[#e5e1e4] ff-body text-xs font-semibold px-8 py-4 rounded-full uppercase tracking-widest transition-standard hover:border-white cursor-pointer">
                   Unduh Katalog PDF
                 </button>
               </div>
@@ -887,9 +915,12 @@ const ProgramPerfume = () => {
                         {p.desc}
                       </p>
                       {/* [5] Glow CTA */}
-                      <button className="relative w-fit px-8 py-4 bg-zinc-200 text-black font-medium rounded-full overflow-hidden shadow-[0_0_15px_rgba(212,212,216,0.1)] hover:shadow-[0_0_30px_rgba(212,212,216,0.4)] hover:bg-white hover:scale-105 transition-all duration-300 ease-out ff-body text-xs font-semibold uppercase tracking-widest">
+                      <Link
+                        to={`/program/${p.slug}`}
+                        className="relative w-fit px-8 py-4 bg-zinc-200 text-black font-medium rounded-full overflow-hidden shadow-[0_0_15px_rgba(212,212,216,0.1)] hover:shadow-[0_0_30px_rgba(212,212,216,0.4)] hover:bg-white hover:scale-105 transition-all duration-300 ease-out ff-body text-xs font-semibold uppercase tracking-widest cursor-pointer"
+                      >
                         Lihat Silabus
-                      </button>
+                      </Link>
                     </div>
                   </FadeIn>
                 ))}
@@ -928,9 +959,12 @@ const ProgramPerfume = () => {
                         {p.desc}
                       </p>
                       {/* [5] Glow CTA */}
-                      <button className="relative w-fit px-8 py-4 bg-zinc-200 text-black font-medium rounded-full overflow-hidden shadow-[0_0_15px_rgba(212,212,216,0.1)] hover:shadow-[0_0_30px_rgba(212,212,216,0.4)] hover:bg-white hover:scale-105 transition-all duration-300 ease-out ff-body text-xs font-semibold uppercase tracking-widest">
+                      <Link
+                        to={`/program/${p.slug}`}
+                        className="relative w-fit px-8 py-4 bg-zinc-200 text-black font-medium rounded-full overflow-hidden shadow-[0_0_15px_rgba(212,212,216,0.1)] hover:shadow-[0_0_30px_rgba(212,212,216,0.4)] hover:bg-white hover:scale-105 transition-all duration-300 ease-out ff-body text-xs font-semibold uppercase tracking-widest cursor-pointer"
+                      >
                         Lihat Silabus
-                      </button>
+                      </Link>
                     </div>
                   </FadeIn>
                 ))}
@@ -982,9 +1016,12 @@ const ProgramPerfume = () => {
                         </div>
                       </div>
                       {/* [5] Glow CTA */}
-                      <button className="relative px-8 py-4 bg-zinc-200 text-black font-medium rounded-full overflow-hidden shadow-[0_0_15px_rgba(212,212,216,0.1)] hover:shadow-[0_0_30px_rgba(212,212,216,0.4)] hover:bg-white hover:scale-105 transition-all duration-300 ease-out ff-body text-xs font-semibold uppercase tracking-widest whitespace-nowrap">
+                      <Link
+                        to="/program/magister-terapan-inovasi-teknologi-olfaktori"
+                        className="relative px-8 py-4 bg-zinc-200 text-black font-medium rounded-full overflow-hidden shadow-[0_0_15px_rgba(212,212,216,0.1)] hover:shadow-[0_0_30px_rgba(212,212,216,0.4)] hover:bg-white hover:scale-105 transition-all duration-300 ease-out ff-body text-xs font-semibold uppercase tracking-widest whitespace-nowrap cursor-pointer"
+                      >
                         Lihat Silabus Lengkap
-                      </button>
+                      </Link>
                     </div>
                   </div>
                 </div>
@@ -1121,7 +1158,7 @@ const ProgramPerfume = () => {
                     <button
                       key={tab}
                       onClick={() => setActiveTab(tab)}
-                      className="relative px-8 py-2 rounded-full ff-body text-xs font-semibold z-10 transition-colors duration-200"
+                      className="relative px-8 py-2 rounded-full ff-body text-xs font-semibold z-10 transition-colors duration-200 cursor-pointer"
                       style={{ color: activeTab === tab ? "#000" : "#a1a1aa" }}
                     >
                       {/* Sliding pill background */}
@@ -1154,7 +1191,7 @@ const ProgramPerfume = () => {
                     <button
                       key={key}
                       onClick={() => setActiveIntake(key)}
-                      className="relative ff-body text-xs font-semibold pb-2 transition-colors duration-200"
+                      className="relative ff-body text-xs font-semibold pb-2 transition-colors duration-200 cursor-pointer"
                       style={{
                         color: activeIntake === key ? "#f4f4f5" : "#71717a",
                       }}
@@ -1211,7 +1248,7 @@ const ProgramPerfume = () => {
                     </div>
                   </div>
                 </div>
-                <button className="bg-zinc-800 border border-zinc-600 px-8 py-3 ff-body text-xs font-semibold uppercase tracking-widest hover:bg-zinc-700 transition-standard whitespace-nowrap text-white">
+                <button className="bg-zinc-800 border border-zinc-600 px-8 py-3 ff-body text-xs font-semibold uppercase tracking-widest hover:bg-zinc-700 transition-standard whitespace-nowrap text-white cursor-pointer">
                   Sync to Calendar
                 </button>
               </div>
@@ -1255,17 +1292,18 @@ const ProgramPerfume = () => {
             {/* Bottom Actions */}
             <FadeIn delay={100}>
               <div className="flex flex-col md:flex-row justify-center items-center gap-8">
-                <a
-                  href="#"
-                  className="ff-body text-sm text-zinc-400 hover:text-white underline underline-offset-4 transition-standard"
+                <button
+                  type="button"
+                  onClick={() => setIsModalOpen(true)}
+                  className="ff-body text-sm text-zinc-400 hover:text-white underline underline-offset-4 transition-standard cursor-pointer"
                 >
                   Lihat Benefit & Rincian Fasilitas
-                </a>
-                <button className="border border-zinc-700 px-8 py-3 ff-body text-xs font-semibold uppercase tracking-widest hover:border-white transition-standard text-white">
+                </button>
+                <button className="border border-zinc-700 px-8 py-3 ff-body text-xs font-semibold uppercase tracking-widest hover:border-white transition-standard text-white cursor-pointer">
                   Info Scholarship
                 </button>
                 {/* [5] Glow CTA */}
-                <button className="relative px-8 py-4 bg-zinc-200 text-black font-medium rounded-full overflow-hidden shadow-[0_0_15px_rgba(212,212,216,0.1)] hover:shadow-[0_0_30px_rgba(212,212,216,0.4)] hover:bg-white hover:scale-105 transition-all duration-300 ease-out ff-body text-xs font-semibold uppercase tracking-widest flex items-center gap-3">
+                <button className="relative px-8 py-4 bg-zinc-200 text-black font-medium rounded-full overflow-hidden shadow-[0_0_15px_rgba(212,212,216,0.1)] hover:shadow-[0_0_30px_rgba(212,212,216,0.4)] hover:bg-white hover:scale-105 transition-all duration-300 ease-out ff-body text-xs font-semibold uppercase tracking-widest flex items-center gap-3 cursor-pointer">
                   <svg
                     className="w-5 h-5"
                     fill="currentColor"
@@ -1392,7 +1430,7 @@ const ProgramPerfume = () => {
                 </p>
                 <div className="flex flex-col items-center">
                   {/* [5] Glow CTA */}
-                  <button className="relative px-8 py-4 bg-zinc-200 text-black font-medium rounded-full overflow-hidden shadow-[0_0_15px_rgba(212,212,216,0.1)] hover:shadow-[0_0_30px_rgba(212,212,216,0.4)] hover:bg-white hover:scale-105 transition-all duration-300 ease-out ff-body text-xs font-semibold uppercase tracking-widest flex items-center gap-4">
+                  <button className="relative px-8 py-4 bg-zinc-200 text-black font-medium rounded-full overflow-hidden shadow-[0_0_15px_rgba(212,212,216,0.1)] hover:shadow-[0_0_30px_rgba(212,212,216,0.4)] hover:bg-white hover:scale-105 transition-all duration-300 ease-out ff-body text-xs font-semibold uppercase tracking-widest flex items-center gap-4 cursor-pointer">
                     Konsultasi Program dengan Advisor Kami
                     <span>→</span>
                   </button>
@@ -1405,6 +1443,104 @@ const ProgramPerfume = () => {
           </FadeIn>
         </section>
       </main>
+
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-md p-4">
+          <div className="relative w-full max-w-4xl bg-[#0a0a0a] border border-white/10 rounded-2xl shadow-2xl overflow-hidden p-8">
+            <button
+              type="button"
+              onClick={() => setIsModalOpen(false)}
+              className="absolute right-5 top-5 text-zinc-500 hover:text-white transition-standard cursor-pointer"
+            >
+              <X className="h-5 w-5" />
+            </button>
+
+            <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-[#d5bbff]/10 pointer-events-none" />
+            <div className="relative z-10">
+              <span className="ff-body text-[10px] font-semibold uppercase tracking-[0.4em] text-[#e9c349]">
+                S&N Institute
+              </span>
+              <h3 className="ff-display text-3xl md:text-4xl font-semibold text-white mt-4">
+                Exclusive Benefits & Facilities
+              </h3>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
+                <div className="flex gap-4">
+                  <FlaskConical className="h-6 w-6 flex-shrink-0 text-[#e9c349]" />
+                  <div>
+                    <h4 className="ff-display text-lg font-medium text-white mb-2">
+                      Akses Eksklusif Raw Materials
+                    </h4>
+                    <p className="ff-body text-sm text-zinc-400 leading-relaxed">
+                      Akses ke perpustakaan aroma yang berisi ribuan bahan baku alami premium dan molekul sintetis langka.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex gap-4">
+                  <Microscope className="h-6 w-6 flex-shrink-0 text-[#d5bbff]" />
+                  <div>
+                    <h4 className="ff-display text-lg font-medium text-white mb-2">
+                      Advanced Olfactory Technology
+                    </h4>
+                    <p className="ff-body text-sm text-zinc-400 leading-relaxed">
+                      Penggunaan alat ekstraksi modern dan mesin analisis GC-MS untuk membedah profil aroma secara presisi.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex gap-4">
+                  <UserCheck className="h-6 w-6 flex-shrink-0 text-[#e9c349]" />
+                  <div>
+                    <h4 className="ff-display text-lg font-medium text-white mb-2">
+                      Master Perfumer Mentorship
+                    </h4>
+                    <p className="ff-body text-sm text-zinc-400 leading-relaxed">
+                      Sesi 1-on-1 mentoring dengan para 'Noses' berpengalaman dan ahli kimia industri bersertifikasi.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex gap-4">
+                  <Atom className="h-6 w-6 flex-shrink-0 text-[#d5bbff]" />
+                  <div>
+                    <h4 className="ff-display text-lg font-medium text-white mb-2">
+                      Molecular Blending Curriculum
+                    </h4>
+                    <p className="ff-body text-sm text-zinc-400 leading-relaxed">
+                      Modul pembelajaran komprehensif yang menjembatani intuisi seni meracik parfum dengan akurasi sains molekuler.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex gap-4">
+                  <Globe className="h-6 w-6 flex-shrink-0 text-[#e9c349]" />
+                  <div>
+                    <h4 className="ff-display text-lg font-medium text-white mb-2">
+                      Global Fragrance Connection
+                    </h4>
+                    <p className="ff-body text-sm text-zinc-400 leading-relaxed">
+                      Koneksi langsung dan peluang magang di berbagai fragrance houses ternama global.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex gap-4">
+                  <Award className="h-6 w-6 flex-shrink-0 text-[#d5bbff]" />
+                  <div>
+                    <h4 className="ff-display text-lg font-medium text-white mb-2">
+                      S&N Certified Perfumer
+                    </h4>
+                    <p className="ff-body text-sm text-zinc-400 leading-relaxed">
+                      Sertifikasi kelulusan resmi yang memvalidasi keahlian olfactory kamu dan diakui oleh standar industri internasional.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };

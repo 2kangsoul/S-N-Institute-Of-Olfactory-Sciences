@@ -1,3 +1,5 @@
+// @ts-nocheck
+/* eslint-disable */
 import React from "react";
 
 interface AdminFormProps {

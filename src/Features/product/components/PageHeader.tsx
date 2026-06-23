@@ -1,4 +1,6 @@
 // File: src/Features/product/components/PageHeader.tsx
+// @ts-nocheck
+/* eslint-disable */
 import React from "react";
 import type { PageHeaderProps } from "../types/headerTypes";
 

@@ -1,70 +1,88 @@
 // @ts-nocheck
 /* eslint-disable */
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuthStore } from "../stores/useAuthStore";
-import { Navigate, Link, useNavigate, useLocation } from "react-router-dom";
+import { Navigate, Link, useLocation, Outlet } from "react-router-dom";
 import {
   LayoutDashboard,
   BookOpen,
-  BarChart2,
-  Package,
-  GraduationCap,
-  Sparkles,
   Users,
-  DollarSign,
+  CalendarDays,
   ClipboardList,
   Settings,
-  Home,
+  LogOut,
 } from "lucide-react";
-import AdminSidebarModal from "../Features/Admin/AdminModal/AdminSidebarModal";
+import apiClient from "../config/api";
 
-interface AdminLayoutProps {
-  children: React.ReactNode;
+interface LectureLayoutProps {
+  children?: React.ReactNode;
 }
 
-const NavItem = ({ icon: Icon, label, active = false, onClick }: any) => (
-  <div
-    onClick={onClick}
-    style={{
-      display: "flex",
-      alignItems: "center",
-      gap: "10px",
-      padding: "8px 10px",
-      borderRadius: "8px",
-      color: active ? "#fff" : "#94a3b8",
-      background: active ? "#1e2130" : "transparent",
-      cursor: "pointer",
-      fontSize: "13px",
-      marginBottom: "2px",
-      transition: "all 0.2s",
-    }}
-    onMouseEnter={(e) => {
-      if (!active) {
-        e.currentTarget.style.background = "#1e2130";
+const NavItem = ({ icon: Icon, label, active = false, onClick, to }: any) => {
+  const content = (
+    <div
+      onClick={onClick}
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: "10px",
+        padding: "8px 10px",
+        borderRadius: "8px",
+        color: active ? "#fff" : "#94a3b8",
+        background: active ? "#1e2130" : "transparent",
+        cursor: "pointer",
+        fontSize: "13px",
+        marginBottom: "2px",
+        transition: "all 0.2s",
+        textDecoration: "none",
+      }}
+      onMouseEnter={(e) => {
+        if (!active) e.currentTarget.style.background = "#1e2130";
         e.currentTarget.style.color = "#fff";
-      }
-    }}
-    onMouseLeave={(e) => {
-      if (!active) {
-        e.currentTarget.style.background = "transparent";
-        e.currentTarget.style.color = "#94a3b8";
-      }
-    }}
-  >
-    <Icon size={16} />
-    {label}
-  </div>
-);
+      }}
+      onMouseLeave={(e) => {
+        if (!active) {
+          e.currentTarget.style.background = "transparent";
+          e.currentTarget.style.color = "#94a3b8";
+        }
+      }}
+    >
+      <Icon size={16} />
+      {label}
+    </div>
+  );
 
-const AdminLayout = ({ children }: AdminLayoutProps) => {
-  const { isAuthenticated, user } = useAuthStore();
-  const [showModal, setShowModal] = useState(false);
-  const navigate = useNavigate();
+  if (to)
+    return (
+      <Link to={to} style={{ textDecoration: "none" }}>
+        {content}
+      </Link>
+    );
+  return content;
+};
+
+const LectureLayout = ({ children }: LectureLayoutProps) => {
+  const { isAuthenticated, user, logout } = useAuthStore();
+  const [lectureProfile, setLectureProfile] = useState<any>(null);
+  const [isChecking, setIsChecking] = useState(true);
   const location = useLocation();
 
-  if (!isAuthenticated) return <Navigate to="/" replace />;
+  useEffect(() => {
+    if (!user?.objectId) return;
+    apiClient
+      .get(`/lectures/user/${user.objectId}`)
+      .then((res) => {
+        setLectureProfile(res.data?.data);
+      })
+      .catch(() => {
+        setLectureProfile(null);
+      })
+      .finally(() => setIsChecking(false));
+  }, [user?.objectId]);
 
-  if (isAuthenticated && !user?.role) {
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
+
+  if (isChecking) {
     return (
       <div
         style={{
@@ -90,28 +108,29 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
     );
   }
 
-  if (user?.role !== "admin" && user?.role !== "owner")
-    return <Navigate to="/" replace />;
+  if (!lectureProfile) return <Navigate to="/" replace />;
 
-  const displayName = user?.name || user?.fullName || "Admin";
-  const displayInitial = displayName[0].toUpperCase();
+  const displayName = user?.name || user?.fullName || "Lecture";
+  const displayInitial = displayName[0]?.toUpperCase();
 
-  const mainNav = [
-    { icon: LayoutDashboard, label: "Dashboard", path: "/admin" },
-    { icon: BookOpen, label: "Program", path: "/program" },
-    { icon: BarChart2, label: "Laporan", path: "/admin/laporan" },
-    { icon: Package, label: "Produk", path: "/products" },
-    { icon: GraduationCap, label: "Lecture & Student", path: "/admin" },
+  const handleLogout = () => {
+    logout();
+    window.location.href = "/login";
+  };
+
+  const navItems = [
+    { icon: LayoutDashboard, label: "Dashboard", to: "/lecture" },
+    { icon: BookOpen, label: "Program Saya", to: "/lecture/program" },
+    { icon: CalendarDays, label: "Jadwal Modul", to: "/lecture/schedule" }, // ← fix
+    { icon: Users, label: "Murid", to: "/lecture/murid" },
+    { icon: ClipboardList, label: "Absensi", to: "/lecture/absensi" },
   ];
 
-  const otherNav = [
-    { icon: Sparkles, label: "Perfume", path: "/awards" },
-    { icon: Users, label: "Users", path: "/admin" },
-    { icon: DollarSign, label: "Expenses", path: "/admin" },
-    { icon: ClipboardList, label: "Orders", path: "/admin" },
-  ];
-
-  const isActive = (path: string) => location.pathname === path;
+  // active check: exact untuk /lecture, startsWith untuk sub-routes
+  const isActive = (path: string) => {
+    if (path === "/lecture") return location.pathname === "/lecture";
+    return location.pathname.startsWith(path);
+  };
 
   return (
     <div
@@ -124,11 +143,6 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
         fontSize: "13px",
       }}
     >
-      <AdminSidebarModal
-        isOpen={showModal}
-        onClose={() => setShowModal(false)}
-      />
-
       {/* SIDEBAR */}
       <div
         style={{
@@ -144,9 +158,6 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
         {/* Logo */}
         <div
           style={{
-            fontSize: "15px",
-            fontWeight: 500,
-            color: "#fff",
             padding: "0 16px 20px",
             display: "flex",
             alignItems: "center",
@@ -170,32 +181,34 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
           </Link>
         </div>
 
-        {/* Main nav */}
-        <div style={{ padding: "4px 8px" }}>
+        {/* Lecture badge */}
+        <div
+          style={{
+            margin: "0 8px 16px",
+            padding: "8px 12px",
+            background: "rgba(124,58,237,0.1)",
+            border: "1px solid rgba(124,58,237,0.3)",
+            borderRadius: "8px",
+          }}
+        >
           <div
             style={{
-              fontSize: "11px",
-              color: "#4b5563",
-              padding: "12px 10px 4px",
+              fontSize: "10px",
+              color: "#a78bfa",
               textTransform: "uppercase",
-              letterSpacing: "0.05em",
+              letterSpacing: "0.08em",
+              marginBottom: "2px",
             }}
           >
-            Main
+            Lecture Portal
           </div>
-          {mainNav.map((item) => (
-            <NavItem
-              key={item.label}
-              icon={item.icon}
-              label={item.label}
-              active={isActive(item.path)}
-              onClick={() => navigate(item.path)}
-            />
-          ))}
+          <div style={{ fontSize: "11px", color: "#64748b" }}>
+            {lectureProfile?.lectureCode || "SNN-Olfactory"}
+          </div>
         </div>
 
-        {/* Other nav */}
-        <div style={{ padding: "4px 8px", marginTop: "8px" }}>
+        {/* Nav */}
+        <div style={{ padding: "4px 8px", flex: 1 }}>
           <div
             style={{
               fontSize: "11px",
@@ -205,43 +218,37 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
               letterSpacing: "0.05em",
             }}
           >
-            Other
+            Menu
           </div>
-          {otherNav.map((item) => (
+          {navItems.map((item) => (
             <NavItem
-              key={item.label}
+              key={item.to}
               icon={item.icon}
               label={item.label}
-              active={isActive(item.path)}
-              onClick={() => navigate(item.path)}
+              to={item.to}
+              active={isActive(item.to)}
             />
           ))}
         </div>
 
         {/* Bottom */}
-        <div style={{ marginTop: "auto", padding: "12px 8px 0" }}>
+        <div style={{ padding: "12px 8px 0" }}>
           <NavItem
             icon={Settings}
             label="Settings"
-            active={false}
-            onClick={() => navigate("/admin")}
+            to="/lecture/settings"
+            active={location.pathname === "/lecture/settings"}
           />
-          <NavItem
-            icon={Home}
-            label="Ke Beranda"
-            active={false}
-            onClick={() => navigate("/")}
-          />
+          <NavItem icon={LogOut} label="Logout" onClick={handleLogout} />
 
-          {/* User profile */}
+          {/* User info */}
           <div
-            onClick={() => setShowModal(true)}
             style={{
               display: "flex",
               alignItems: "center",
               gap: "8px",
               padding: "10px 10px 0",
-              cursor: "pointer",
+              marginTop: "4px",
             }}
           >
             <div
@@ -283,14 +290,14 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
                 {displayName}
               </div>
               <div style={{ fontSize: "10px", color: "#64748b" }}>
-                Account settings
+                {lectureProfile?.specialization || "Lecture"}
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* MAIN CONTENT */}
+      {/* MAIN CONTENT — support nested routes (Outlet) & legacy children */}
       <div
         style={{
           flex: 1,
@@ -300,10 +307,10 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
           flexDirection: "column",
         }}
       >
-        {children}
+        {children ?? <Outlet />}
       </div>
     </div>
   );
 };
 
-export default AdminLayout;
+export default LectureLayout;

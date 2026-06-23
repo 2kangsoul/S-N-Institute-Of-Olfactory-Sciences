@@ -192,14 +192,14 @@ export default function RegisterModal({
 
     try {
       await apiClient.post("/send-email", {
-        subject: "Kode Verifikasi (OTP) - Saa Fragrance",
+        subject: "Kode Verifikasi (OTP) - SNN Institute Of Olfactory Sciences",
         bodyparts: {
-          textmessage: `Halo ${name},\n\nTerima kasih telah mendaftar di Saa Fragrance!\n\nKode OTP Anda adalah: ${randomOtp}\n\nDemi keamanan akun Anda, mohon tidak membagikan kode ini kepada siapapun.\n\nSalam hangat,\nTim Saa Fragrance`,
+          textmessage: `Halo ${name},\n\nTerima kasih telah mendaftar di SNN Institute Of Olfactory Sciences!\n\nKode OTP Anda adalah: ${randomOtp}\n\nDemi keamanan akun Anda, mohon tidak membagikan kode ini kepada siapapun.\n\nSalam hangat,\nTim SNN Institute Of Olfactory Sciences`,
           htmlmessage: `
             <div style="font-family: Arial, sans-serif; color: #333; line-height: 1.6; max-width: 500px; margin: 0 auto; padding: 30px; border: 1px solid #eaeaea; border-radius: 12px; background-color: #ffffff;">
               <h2 style="color: #111; text-align: center; margin-bottom: 20px;">Verifikasi Akun</h2>
               <p>Halo <strong>${name}</strong>,</p>
-              <p>Terima kasih telah mendaftar di <strong>Saa Fragrance</strong>! Kami sangat senang menyambut Anda.</p>
+              <p>Terima kasih telah mendaftar di <strong>SNN Institute Of Olfactory Sciences</strong>! Kami sangat senang menyambut Anda.</p>
               <p>Untuk menyelesaikan proses pembuatan akun, silakan masukkan 6 digit kode verifikasi (OTP) berikut pada halaman web:</p>
               <div style="text-align: center; margin: 35px 0;">
                 <span style="font-size: 36px; font-weight: bold; letter-spacing: 8px; color: #111; background-color: #f4f2ee; padding: 15px 30px; border-radius: 8px; display: inline-block;">
@@ -214,7 +214,7 @@ export default function RegisterModal({
                 Jika Anda tidak merasa melakukan pendaftaran ini, silakan abaikan email ini.
               </p>
               <p style="font-size: 14px; text-align: center; margin-top: 20px;">
-                Salam wangi,<br/><strong>Tim Saa Fragrance</strong>
+                Salam wangi,<br/><strong>Tim SNN Institute Of Olfactory Sciences</strong>
               </p>
             </div>
           `,
