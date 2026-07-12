@@ -4,7 +4,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useAuthStore } from "../stores/useAuthStore";
 
 export default function AuthLayout({ children }: { children: ReactNode }) {
-  const { isAuthenticated, user, fetchCurrentUser } = useAuthStore();
+  const { isAuthenticated, isAuthLoading, fetchCurrentUser } = useAuthStore();
   const pathname = usePathname();
   const router = useRouter();
 
@@ -12,23 +12,14 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
-  // Sensor Auto-Restore saat Refresh
+  // Verifikasi sesi ke server (cookie httpOnly) tiap kali layout ini mount.
+  // Ini juga yang jadi pengganti "Sensor Anti-Hapus Local Storage" versi lama —
+  // sekarang tidak ada apa pun yang perlu dijaga di localStorage, karena token
+  // memang tidak pernah ada di sana. Status login selalu ditentukan oleh server.
   useEffect(() => {
-    // Update: Memastikan pengecekan userToken dan name/email sinkron dengan store baru
-    if (isAuthenticated && user?.userToken && !user?.name) {
-      fetchCurrentUser();
-    }
-  }, [isAuthenticated, user, fetchCurrentUser]);
-
-  // Sensor Anti-Hapus Local Storage
-  useEffect(() => {
-    if (isAuthenticated) {
-      const checkStorage = localStorage.getItem("auth-storage");
-      if (!checkStorage) {
-        useAuthStore.setState({ isAuthenticated, user });
-      }
-    }
-  }, [pathname, isAuthenticated, user]);
+    fetchCurrentUser();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname]);
 
   // =========================================================================
   // LOGIKA PENGUNCIAN HALAMAN (GUEST vs PRIVATE)
@@ -38,8 +29,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
   const publicRoutes = ["/"];
 
   // SKENARIO A: Orang SUDAH LOGIN, tapi iseng tekan tombol Back ke /login atau /register
-  const redirectHome =
-    isAuthenticated && guestOnlyRoutes.includes(pathname);
+  const redirectHome = isAuthenticated && guestOnlyRoutes.includes(pathname);
 
   // SKENARIO B: Orang BELUM LOGIN, tapi maksa mau masuk ke halaman dalam
   const redirectLogin =
@@ -48,12 +38,15 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
     !publicRoutes.includes(pathname);
 
   useEffect(() => {
-    if (!mounted) return;
+    // Tunggu fetchCurrentUser() ke server selesai dulu sebelum memutuskan redirect,
+    // supaya user yang sebenarnya masih login (cookie valid) tidak sempat
+    // "terlempar" ke /login cuma karena request /auth/me belum selesai.
+    if (!mounted || isAuthLoading) return;
     if (redirectHome) router.replace("/");
     else if (redirectLogin) router.replace("/login");
-  }, [mounted, redirectHome, redirectLogin, router]);
+  }, [mounted, isAuthLoading, redirectHome, redirectLogin, router]);
 
-  if (!mounted || redirectHome || redirectLogin) return null;
+  if (!mounted || isAuthLoading || redirectHome || redirectLogin) return null;
 
   return <>{children}</>;
 }

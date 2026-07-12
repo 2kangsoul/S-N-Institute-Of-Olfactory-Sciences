@@ -51,12 +51,19 @@ export default function Header(props: HeaderProps) {
         <MobileMenu {...props} />
       </header>
 
-      {/* --- TAMBAHAN: Menampilkan Pop-up Account Settings --- */}
-      <SettingsAccountModal
-        isOpen={isAccountModalOpen}
-        onClose={() => setIsAccountModalOpen(false)}
-        user={user}
-      />
+      {/* --- TAMBAHAN: Menampilkan Pop-up Account Settings ---
+          FIX: dirender kondisional (isAccountModalOpen && ...) supaya komponen
+          SettingsAccountModal baru mount saat modal benar-benar dibuka.
+          Sebelumnya modal ini selalu mounted di setiap halaman (karena Header
+          global), sehingga useEffect fetch /api/countries di dalamnya ikut
+          jalan terus-menerus di semua route walau modal belum pernah dibuka. */}
+      {isAccountModalOpen && (
+        <SettingsAccountModal
+          isOpen={isAccountModalOpen}
+          onClose={() => setIsAccountModalOpen(false)}
+          user={user}
+        />
+      )}
     </>
   );
 }

@@ -2,15 +2,17 @@
 /* eslint-disable */
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import type { UseMainLayoutReturn } from "../header/types/MainLayout.types";
 
-// Menambahkan fungsi pop-up register dan account ke dalam tipe props
 interface DesktopActionsProps extends UseMainLayoutReturn {
   setIsRegisterModalOpen?: (val: boolean) => void;
-  setIsAccountModalOpen?: (val: boolean) => void; // <-- Perbaikan baris 8
+  setIsAccountModalOpen?: (val: boolean) => void;
 }
 
 export default function DesktopActions(props: DesktopActionsProps) {
+  const router = useRouter();
+
   const {
     isAuthenticated,
     user,
@@ -21,28 +23,24 @@ export default function DesktopActions(props: DesktopActionsProps) {
     setIsPerfumeModalOpen,
     setIsBlogModalOpen,
     setIsRegisterModalOpen,
-    setIsAccountModalOpen, // <-- Perbaikan baris 20
+    setIsAccountModalOpen,
   } = props;
 
-  // State lokal untuk mengontrol dropdown akun
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
 
   return (
     <div className="hidden lg:flex items-center gap-3 text-xs font-medium">
       {isAuthenticated ? (
         <div className="flex items-center gap-4">
-          {/* --- BAGIAN YANG DIUBAH: Dropdown Hai, {user?.name} --- */}
           <div className="relative">
             <button
               onClick={() => {
                 setIsAccountMenuOpen(!isAccountMenuOpen);
-                // Menutup menu Manage jika sedang terbuka
                 if (setIsManageMenuOpen) setIsManageMenuOpen(false);
               }}
               className="text-sm font-medium text-gray-100 hover:text-gray-200 flex items-center gap-1 cursor-pointer"
             >
               Hai, {user?.name || user?.fullname || "..."}
-              {/* Lingkaran Foto Profil - DITAMBAHKAN SESUAI PERMINTAAN */}
               <div className="w-8 h-8 rounded-full bg-gray-200 overflow-hidden border border-gray-300 flex items-center justify-center flex-shrink-0 ml-1">
                 {user?.profilePic ? (
                   <img
@@ -97,35 +95,18 @@ export default function DesktopActions(props: DesktopActionsProps) {
               </div>
             )}
           </div>
-          {/* --- AKHIR BAGIAN YANG DIUBAH --- */}
 
-          {/* LOGIKA ROLE UNTUK DESKTOP */}
           {user?.role === "owner" || user?.role === "admin" ? (
             <div className="relative">
               <button
                 onClick={() => {
                   if (setIsManageMenuOpen)
                     setIsManageMenuOpen(!isManageMenuOpen);
-                  // Menutup menu Account jika sedang terbuka
                   setIsAccountMenuOpen(false);
                 }}
                 className="flex items-center gap-1 px-3 py-1 bg-gray-100 text-black font-bold hover:bg-gray-200 transition-colors rounded-md"
               >
                 Manage
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-4 w-4"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 9l-7 7-7-7"
-                  />
-                </svg>
               </button>
 
               {isManageMenuOpen && (
@@ -192,14 +173,12 @@ export default function DesktopActions(props: DesktopActionsProps) {
             Sign in
           </Link>
 
-          <button
-            onClick={() =>
-              setIsRegisterModalOpen && setIsRegisterModalOpen(true)
-            }
+          <Link
+            href="/register"
             className="px-3 py-1 bg-gray-100 text-black rounded-md hover:bg-gray-200 transition-colors cursor-pointer"
           >
             Register
-          </button>
+          </Link>
         </>
       )}
     </div>

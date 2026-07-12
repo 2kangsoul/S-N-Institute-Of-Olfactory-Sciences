@@ -1,6 +1,6 @@
 // @ts-nocheck
 /* eslint-disable */
-import { useState, useEffect } from "react"
+import { useState, useEffect } from "react";
 import ReactCountryFlag from "react-country-flag";
 import apiClient from "../../config/api";
 
@@ -261,22 +261,13 @@ export default function SettingsAccountModal({
 
       await apiClient.put(`/users/${userId}`, userToUpdate);
 
-      const stored = localStorage.getItem("auth-storage");
-      if (stored) {
-        try {
-          const parsed = JSON.parse(stored);
-          if (parsed?.state?.user) {
-            parsed.state.user.profilePic = profilePicUrl;
-            parsed.state.user.no_handphone = phone;
-            parsed.state.user.address = getFullAddress();
-            parsed.state.user.country =
-              selectedCountry?.name || user?.country || "";
-            localStorage.setItem("auth-storage", JSON.stringify(parsed));
-          }
-        } catch {
-          // Bukan JSON valid, lewati
-        }
-      }
+      // Catatan migrasi auth: blok localStorage.getItem/setItem("auth-storage")
+      // yang dulu di sini sudah DIHAPUS. Sesi login sekarang disimpan backend lewat
+      // cookie httpOnly, bukan localStorage — jadi tidak ada apa pun di client yang
+      // perlu disinkronkan manual. window.location.reload() di bawah ini sudah cukup:
+      // saat halaman reload, Providers akan panggil fetchCurrentUser() lagi yang
+      // otomatis ambil data terbaru (termasuk profilePic/phone/address baru) dari
+      // /api/auth/me lewat cookie yang sama.
 
       alert("Profile updated successfully!");
       onClose();

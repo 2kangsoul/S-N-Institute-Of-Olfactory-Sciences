@@ -652,7 +652,7 @@ const Home = () => {
               </h2>
               <ul>
                 {aromasData.map((aroma) => (
-                  <li key={aroma.id}>
+                  <li key={aroma.slug}>
                     <Link
                       href={`/isolates/${aroma.name.toLowerCase().replace(/\s+/g, "-")}`}
                       className="flex items-start justify-between gap-5 border-b border-[#4b4454] py-3 group hover:border-[#e9c349]/40 transition-colors duration-300"
@@ -880,7 +880,11 @@ const Home = () => {
                 initial={{ scale: 0, opacity: 0 }}
                 whileInView={{ scale: 1, opacity: 1 }}
                 viewport={{ once: true, amount: 0.3 }}
-                transition={{ duration: 1, delay: 0.35, ease: [0.22, 1, 0.36, 1] }}
+                transition={{
+                  duration: 1,
+                  delay: 0.35,
+                  ease: [0.22, 1, 0.36, 1],
+                }}
                 style={{ originX: "210px", originY: "210px" }}
               />
 
