@@ -13,11 +13,21 @@ export const metadata: Metadata = {
   },
   description:
     "Butik parfum niche & designer terkurasi. Temukan wewangian dengan sillage, projection, dan longevity 'beast mode'.",
-  keywords: ["parfum", "niche", "designer", "fragrance", "wewangian", "SNN Fragrance"],
+  keywords: [
+    "parfum",
+    "niche",
+    "designer",
+    "fragrance",
+    "wewangian",
+    "SNN Fragrance",
+  ],
   openGraph: {
     siteName: "SNN Fragrance",
     locale: "id_ID",
     type: "website",
+  },
+  icons: {
+    icon: "/favicon.svg",
   },
 };
 

@@ -9,7 +9,6 @@ import {
   BookOpen,
   BarChart2,
   Package,
-
   Sparkles,
   Users,
   DollarSign,
@@ -60,7 +59,7 @@ const NavItem = ({ icon: Icon, label, active = false, onClick }: any) => (
 );
 
 const AdminLayout = ({ children }: AdminLayoutProps) => {
-  const { isAuthenticated, user } = useAuthStore();
+  const { isAuthenticated, isAuthLoading, user } = useAuthStore();
   const [showModal, setShowModal] = useState(false);
   const [showSidebar, setShowSidebar] = useState(false);
   const router = useRouter();
@@ -75,10 +74,12 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
     (!!user?.role && user?.role !== "admin" && user?.role !== "owner");
 
   useEffect(() => {
-    if (mounted && denied) router.replace("/");
-  }, [mounted, denied, router]);
+    // Tunggu isAuthLoading selesai (verifikasi cookie ke /auth/me) sebelum redirect,
+    // supaya admin yang sesinya masih valid tidak kelempar keluar karena race condition.
+    if (mounted && !isAuthLoading && denied) router.replace("/");
+  }, [mounted, isAuthLoading, denied, router]);
 
-  if (!mounted) return null;
+  if (!mounted || isAuthLoading) return null;
 
   if (!isAuthenticated) return null; // sedang redirect ke "/"
 
@@ -118,7 +119,6 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
     { icon: BookOpen, label: "Program", path: "/program" },
     { icon: BarChart2, label: "Laporan", path: "/admin/laporan" },
     { icon: Package, label: "Produk", path: "/products" },
-
   ];
 
   const otherNav = [
@@ -203,7 +203,11 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
 
       <div className="portal-mobile-bar">
         <Link href="/" style={{ display: "flex", alignItems: "center" }}>
-          <img src="/SNN.jpeg" alt="SNN Logo" style={{ height: "34px", objectFit: "contain" }} />
+          <img
+            src="/SNN.jpeg"
+            alt="SNN Logo"
+            style={{ height: "34px", objectFit: "contain" }}
+          />
         </Link>
         <button
           type="button"

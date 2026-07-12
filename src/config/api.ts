@@ -7,40 +7,20 @@ const API_URL = "http://localhost:8000/api";
 // UBAH: Nama variabel sekarang menjadi apiClient
 const apiClient = axios.create({
   baseURL: API_URL,
+  withCredentials: true, // WAJIB: supaya cookie httpOnly "token" ikut terkirim ke backend
   headers: {
     "Content-Type": "application/json",
   },
 });
 
 // ====================================================================
-// INTERCEPTOR REQUEST: Menyelipkan JWT token otomatis ke setiap request API
+// Catatan migrasi auth (httpOnly cookie):
+// Interceptor request yang dulu ambil token dari localStorage("auth-storage")
+// dan pasang header Authorization sudah DIHAPUS. Sekarang browser otomatis
+// mengirim cookie httpOnly "token" di setiap request (berkat withCredentials
+// di atas + CORS credentials:true di backend), jadi tidak perlu lagi
+// menyentuh localStorage untuk auth sama sekali.
 // ====================================================================
-apiClient.interceptors.request.use(
-  (config) => {
-    const authStorage = localStorage.getItem("auth-storage");
-
-    if (authStorage) {
-      try {
-        const parsedStorage = JSON.parse(authStorage);
-        // Dukung properti 'token' (Express) dan 'userToken' (Sistem lama)
-        const token =
-          parsedStorage?.state?.user?.token ||
-          parsedStorage?.state?.user?.userToken;
-
-        if (token) {
-          config.headers["Authorization"] = `Bearer ${token}`;
-        }
-      } catch (e) {
-        console.error("Gagal memproses token:", e);
-      }
-    }
-
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  },
-);
 
 // ====================================================================
 // INTERCEPTOR RESPONSE: Global Error Handler (Auto-Logout)
@@ -56,12 +36,12 @@ apiClient.interceptors.response.use(
       if (
         status === 401 &&
         !error.config?.url?.includes("/auth/login") &&
+        !error.config?.url?.includes("/auth/me") &&
         !error.config?.url?.includes("/liked") &&
         !window.location.pathname.includes("/login")
       ) {
         console.warn("Sesi habis atau token tidak valid. Membersihkan sesi...");
 
-        localStorage.removeItem("auth-storage");
         toast.error(
           "Sesi login Anda telah berakhir demi keamanan. Silakan login kembali.",
         );

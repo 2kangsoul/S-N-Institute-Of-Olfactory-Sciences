@@ -1,5 +1,4 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
 import apiClient from "../config/api";
 
 interface UserData {
@@ -10,81 +9,75 @@ interface UserData {
   no_handphone?: string;
   objectId: string;
   id?: string;
-  userToken: string;
   role?: string;
   profilePic?: string;
+  // userToken DIHAPUS: token sekarang cuma hidup di cookie httpOnly milik backend,
+  // JS di browser tidak pernah (dan tidak boleh) bisa membacanya.
 }
 
 interface AuthState {
   isAuthenticated: boolean;
   user: UserData | null;
+  // true selama pengecekan sesi awal (fetchCurrentUser) sedang berjalan.
+  // Dipakai route guard (AuthLayout/AdminLayout) supaya tidak salah redirect
+  // ke /login sebelum kita sempat tahu cookie-nya valid atau tidak.
+  isAuthLoading: boolean;
   setAuth: (userData: UserData) => void;
-  logout: () => void;
+  logout: () => Promise<void>;
   fetchCurrentUser: () => Promise<void>;
 }
 
-export const useAuthStore = create<AuthState>()(
-  persist(
-    (set, get) => ({
-      isAuthenticated: false,
-      user: null,
-      setAuth: (userData) => set({ isAuthenticated: true, user: userData }),
-      logout: () => set({ isAuthenticated: false, user: null }),
+// CATATAN MIGRASI AUTH (httpOnly cookie):
+// Store ini SENGAJA tidak lagi dibungkus `persist`/localStorage seperti versi lama
+// (key "auth-storage"). Sumber kebenaran sesi login sekarang murni cookie httpOnly
+// "token" yang dikelola backend — store ini cuma cache di memori untuk sesi berjalan,
+// dan selalu diverifikasi ulang ke server lewat fetchCurrentUser() (dipanggil di
+// app/providers.tsx setiap kali aplikasi pertama kali dimuat).
+export const useAuthStore = create<AuthState>()((set) => ({
+  isAuthenticated: false,
+  user: null,
+  isAuthLoading: true,
 
-      fetchCurrentUser: async () => {
-        const currentUser = get().user;
+  setAuth: (userData) => set({ isAuthenticated: true, user: userData }),
 
-        // Update: Memastikan ID (objectId) ada untuk fetch data
-        if (!currentUser?.userToken || !currentUser?.objectId) return;
+  logout: async () => {
+    try {
+      // Cookie httpOnly tidak bisa dihapus dari JS — harus lewat request
+      // ke backend supaya Set-Cookie dengan maxAge kadaluarsa dikirim balik.
+      await apiClient.post("/auth/logout");
+    } catch (error) {
+      console.error("Gagal logout di server:", error);
+    } finally {
+      set({ isAuthenticated: false, user: null });
+    }
+  },
 
-        try {
-          console.groupCollapsed(
-            `🔐 [AuthStore] Sesi Aktif: ${currentUser.name || "User"}`,
-          );
+  fetchCurrentUser: async () => {
+    set({ isAuthLoading: true });
+    try {
+      // Tidak perlu cek token apa pun di client dulu — cookie httpOnly otomatis
+      // ikut terkirim (withCredentials di api.ts). Backend yang menentukan valid/tidak.
+      const response = await apiClient.get("/auth/me");
+      const data = response.data?.data || response.data;
 
-          // Update: Endpoint disesuaikan ke Express.js
-          const response = await apiClient.get(
-            `/users/${currentUser.objectId}`,
-          );
-
-          console.log("✅ Data dari DB:", response.data);
-
-          set({
-            user: {
-              ...currentUser,
-              name: response.data.fullName || currentUser.name,
-              email: response.data.email,
-              address: response.data.address,
-              no_handphone: response.data.no_handphone,
-              objectId: response.data.id || currentUser.objectId,
-              role: response.data.role || "user",
-              profilePic: response.data.profilePic || currentUser.profilePic,
-              userToken: currentUser.userToken,
-            },
-          });
-
-          console.groupEnd();
-        } catch (error: any) {
-          console.error("❌ [AuthStore] Gagal mengambil data:", error);
-
-          if (error.response?.status === 401) {
-            get().logout();
-          }
-        }
-      },
-    }),
-    {
-      name: "auth-storage",
-      partialize: (state) => ({
-        isAuthenticated: state.isAuthenticated,
-        user: state.user
-          ? {
-              userToken: state.user.userToken,
-              objectId: state.user.objectId,
-              role: state.user.role,
-            }
-          : null,
-      }),
-    },
-  ),
-);
+      set({
+        isAuthenticated: true,
+        user: {
+          name: data.fullName,
+          email: data.email,
+          address: data.address,
+          no_handphone: data.no_handphone,
+          objectId: data.id,
+          role: data.role || "user",
+          profilePic: data.profilePic,
+        },
+      });
+    } catch (error) {
+      // 401/403 di sini wajar — artinya memang belum login / cookie sudah tidak valid,
+      // bukan error tak terduga.
+      set({ isAuthenticated: false, user: null });
+    } finally {
+      set({ isAuthLoading: false });
+    }
+  },
+}));

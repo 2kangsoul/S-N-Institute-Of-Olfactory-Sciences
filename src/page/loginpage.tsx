@@ -54,7 +54,6 @@ export default function LoginPage() {
         name: userData?.fullName || data.email.split("@")[0],
         email: userData?.email,
         objectId: userData?.id,
-        userToken: res.data.token,
         role: userRole,
         profilePic: userData?.profilePic || "",
       });

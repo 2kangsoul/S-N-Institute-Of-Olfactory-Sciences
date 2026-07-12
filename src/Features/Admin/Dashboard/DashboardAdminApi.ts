@@ -1,7 +1,7 @@
 import apiClient from "../../../config/api";
 import type { DashboardData } from "./DashboardAdminType";
 
-const safeGet = async (url: string, timeoutMs = 5000) => {
+const safeGet = async (url: string, timeoutMs = 15000) => {
   try {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), timeoutMs);
@@ -53,23 +53,32 @@ export async function fetchDashboardData(): Promise<DashboardData> {
     activeUsers: 0,
   };
 
+  // Dipecah jadi 2 gelombang (bukan 10 request sekaligus) supaya tidak membanjiri
+  // connection pool database (apalagi di tier kecil seperti Supabase Nano).
+  // Beberapa endpoint di sini (mis. /monthly-users/realtime) juga menjalankan
+  // 2-3 query internal secara paralel, jadi total tekanan ke DB tetap besar
+  // walau di sisi frontend cuma kelihatan beberapa request.
   const [
     pageviewsRes,
     subscriptionsRes,
     financialsRes,
     monthlyUsersRes,
     signUpsRes,
-    chartRes,
-    sessionsRes,
-    monthlyOverviewRes,
-    monthlySummaryRes,
-    userProfileRes,
   ] = await Promise.all([
     safeGet("/analytics/pageviews"),
     safeGet("/subscriptions/data"),
     safeGet("/orders/financials"),
     safeGet("/users/monthly"),
     safeGet("/signups/data"),
+  ]);
+
+  const [
+    chartRes,
+    sessionsRes,
+    monthlyOverviewRes,
+    monthlySummaryRes,
+    userProfileRes,
+  ] = await Promise.all([
     safeGet("/expenses/chart"),
     safeGet("/analytics/sessions"),
     safeGet("/monthly-users/realtime"),

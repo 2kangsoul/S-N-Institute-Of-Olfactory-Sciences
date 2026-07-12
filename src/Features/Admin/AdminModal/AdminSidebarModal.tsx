@@ -276,18 +276,9 @@ export default function AdminSidebarModal({
       if (password.trim()) payload.password = password;
       await apiClient.put(`/users/${userId}`, payload);
 
-      // Update localStorage
-      const stored = localStorage.getItem("auth-storage");
-      if (stored) {
-        try {
-          const parsed = JSON.parse(stored);
-          if (parsed?.state?.user) {
-            parsed.state.user.profilePic = profilePicUrl;
-            parsed.state.user.no_handphone = phone;
-            localStorage.setItem("auth-storage", JSON.stringify(parsed));
-          }
-        } catch {}
-      }
+      // Catatan migrasi auth: blok localStorage("auth-storage") yang dulu di sini
+      // sudah DIHAPUS — sesi sekarang di cookie httpOnly, dan refresh /auth/me +
+      // setAuth() di bawah ini sudah cukup untuk menyinkronkan store.
       // Refresh userData dari /auth/me untuk dapat country terbaru
       const refreshed = await apiClient.get(`/auth/me`);
       const updatedUser = refreshed.data?.data || refreshed.data;

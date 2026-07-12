@@ -6,7 +6,7 @@ import Link from "next/link";
 import toast from "react-hot-toast";
 import { useAuthStore } from "../../../stores/useAuthStore"; // Pastikan path ini sesuai
 import apiClient from "../../../config/api"; // Pastikan path ini sesuai
-import type { ComponentLoginProps } from "../types/loginTypes"; 
+import type { ComponentLoginProps } from "../types/loginTypes";
 
 const ComponentLogin: React.FC<ComponentLoginProps> = ({
   showLoginModal,
@@ -46,7 +46,6 @@ const ComponentLogin: React.FC<ComponentLoginProps> = ({
         name: userData?.fullName || email.split("@")[0],
         email: userData?.email,
         objectId: userData?.id,
-        userToken: res?.data?.token,
         role: userRole,
         profilePic: userData?.profilePic || "",
       });
@@ -56,7 +55,8 @@ const ComponentLogin: React.FC<ComponentLoginProps> = ({
     } catch (error: any) {
       console.error("Login gagal di modal", error);
       toast.error(
-        error.response?.data?.message || "Gagal login, periksa kembali email & password"
+        error.response?.data?.message ||
+          "Gagal login, periksa kembali email & password",
       );
     } finally {
       setIsLoading(false);
@@ -108,12 +108,12 @@ const ComponentLogin: React.FC<ComponentLoginProps> = ({
             />
           </div>
 
-          <button 
+          <button
             onClick={handleLogin} // <-- UPDATE: Pasang event klik
             disabled={isLoading} // <-- UPDATE: Disable saat loading
             className="btn bg-gray-900 text-white hover:bg-black border-none w-full mt-4 rounded-xl cursor-pointer active:scale-95 disabled:opacity-50"
           >
-            {isLoading ? "Memproses..." : "Sign in"} 
+            {isLoading ? "Memproses..." : "Sign in"}
           </button>
         </div>
 
