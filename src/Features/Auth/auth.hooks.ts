@@ -1,8 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { authService } from "./auth.services";
+import { AuthUser } from "./auth.types";
 export const AUTH_ME_KEY = ["auth", "me"];
 export const useMe = () => {
-  return useQuery({
+  return useQuery<AuthUser>({
     queryKey: AUTH_ME_KEY,
     queryFn: authService.me,
     retry: false,
@@ -33,3 +34,4 @@ export const useLogout = () => {
     },
   });
 };
+
