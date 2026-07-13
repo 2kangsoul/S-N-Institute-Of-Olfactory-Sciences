@@ -4,8 +4,6 @@
 import { useState, type ReactNode } from "react"; // <-- TAMBAHAN: Import useState
 import { useMainLayout } from "../hooks/useMainLayout";
 
-import AdminManagerModal from "../../adminmanage/component/AdminManagerModal";
-import PerfumeManagerModal from "../../productmanage/component/PerfumeManagerModal";
 import BlogManagerModal from "../../blogmanage/component/BlogManagerModal";
 
 // --- TAMBAHAN: Import Register Modal dari folder Anda ---
@@ -31,17 +29,6 @@ export default function MainLayout({ children }: { children: ReactNode }) {
       <main>
         {children}
       </main>
-
-      {/* SEMUA MODAL POPUP LAINNYA */}
-      <AdminManagerModal
-        isOpen={layoutState.isAdminModalOpen}
-        onClose={() => layoutState.setIsAdminModalOpen(false)}
-      />
-
-      <PerfumeManagerModal
-        isOpen={layoutState.isPerfumeModalOpen}
-        onClose={() => layoutState.setIsPerfumeModalOpen(false)}
-      />
 
       <BlogManagerModal
         isOpen={layoutState.isBlogModalOpen}

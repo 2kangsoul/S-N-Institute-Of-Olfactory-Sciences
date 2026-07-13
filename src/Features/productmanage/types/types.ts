@@ -1,10 +1,5 @@
 // src/Features/productmanage/types.ts
 
-export interface PerfumeManagerModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-}
-
 export interface Product {
   id: string; // UPDATE: Menggunakan id (sesuai Prisma)
   name: string;

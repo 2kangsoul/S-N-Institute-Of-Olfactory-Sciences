@@ -9,7 +9,7 @@ import {
   deleteUserApi,
 } from "../api/adminManagerApi";
 
-export const useAdminManager = (isOpen: boolean) => {
+export const useAdminManager = () => {
   const [admins, setAdmins] = useState<AdminUser[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isFetching, setIsFetching] = useState(false);
@@ -40,10 +40,8 @@ export const useAdminManager = (isOpen: boolean) => {
   };
 
   useEffect(() => {
-    if (isOpen) {
-      fetchAdmins();
-    }
-  }, [isOpen]);
+    fetchAdmins();
+  }, []);
 
   const handleAddAdmin = async (e: React.FormEvent) => {
     e.preventDefault();

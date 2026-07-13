@@ -4,8 +4,6 @@ import { useState, useEffect } from "react";
 import { useAuthStore } from "../../../stores/useAuthStore";
 import apiClient from "../../../config/api";
 
-type Tab = "account" | "add-admin" | "make-admin";
-
 interface Country {
   name: string;
   iso2: string;
@@ -28,31 +26,6 @@ interface Village {
   name: string;
 }
 
-// ─── Admin API helpers ────────────────────────────────────────────────────────
-const fetchAdminsApi = async () => {
-  const res = await apiClient.get("/users", { params: { role: "admin" } });
-  return res.data.data || [];
-};
-const registerAdminApi = async (payload: any) => {
-  const res = await apiClient.post("/auth/register", payload);
-  return res.data;
-};
-const findUserByEmailApi = async (email: string) => {
-  const res = await apiClient.get("/users", { params: { email } });
-  return res.data.data;
-};
-const updateUserRoleApi = async (id: string, payload: any) => {
-  const res = await apiClient.put(`/users/${id}`, payload);
-  return res.data.data;
-};
-const deleteUserApi = async (id: string) => {
-  const res = await apiClient.put(`/users/${id}`, {
-    role: "user",
-    adminDuration: null,
-  });
-  return res.data;
-};
-
 export default function AdminSidebarModal({
   isOpen,
   onClose,
@@ -61,7 +34,6 @@ export default function AdminSidebarModal({
   onClose: () => void;
 }) {
   const { user } = useAuthStore();
-  const [activeTab, setActiveTab] = useState<Tab>("account");
 
   // ── User data from DB ─────────────────────────────────────────────────────
   const [userData, setUserData] = useState<any>(null);
@@ -88,16 +60,6 @@ export default function AdminSidebarModal({
   const [selectedDistrict, setSelectedDistrict] = useState("");
   const [selectedVillage, setSelectedVillage] = useState("");
 
-  // ── Admin state ───────────────────────────────────────────────────────────
-  const [admins, setAdmins] = useState<any[]>([]);
-  const [isFetchingAdmins, setIsFetchingAdmins] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [addForm, setAddForm] = useState({
-    fullName: "",
-    email: "",
-    password: "",
-  });
-  const [makeForm, setMakeForm] = useState({ email: "", duration: "30 hari" });
   const [msg, setMsg] = useState<{ type: "ok" | "err"; text: string } | null>(
     null,
   );
@@ -205,16 +167,6 @@ export default function AdminSidebarModal({
     setSelectedVillage("");
   }, [selectedDistrict]);
 
-  // ── Fetch admins when tab changes ─────────────────────────────────────────
-  useEffect(() => {
-    if (!isOpen || activeTab === "account") return;
-    setIsFetchingAdmins(true);
-    fetchAdminsApi()
-      .then(setAdmins)
-      .catch(() => setAdmins([]))
-      .finally(() => setIsFetchingAdmins(false));
-  }, [isOpen, activeTab]);
-
   if (!isOpen) return null;
 
   // ── Helpers ───────────────────────────────────────────────────────────────
@@ -303,85 +255,6 @@ export default function AdminSidebarModal({
     }
   };
 
-  // ── Add admin ─────────────────────────────────────────────────────────────
-  const handleAddAdmin = async (e: any) => {
-    e.preventDefault();
-    if (!addForm.fullName || !addForm.email || !addForm.password) {
-      setMsg({ type: "err", text: "Semua field wajib diisi." });
-      return;
-    }
-    setIsLoading(true);
-    setMsg(null);
-    try {
-      await registerAdminApi({
-        fullName: addForm.fullName,
-        username: addForm.email.split("@")[0],
-        email: addForm.email,
-        password: addForm.password,
-        role: "admin",
-      });
-      setMsg({ type: "ok", text: "Admin baru berhasil didaftarkan!" });
-      setAddForm({ fullName: "", email: "", password: "" });
-      setAdmins(await fetchAdminsApi());
-    } catch (e: any) {
-      setMsg({
-        type: "err",
-        text: e.response?.data?.message || "Gagal mendaftarkan admin.",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // ── Make admin ────────────────────────────────────────────────────────────
-  const handleMakeAdmin = async (e: any) => {
-    e.preventDefault();
-    if (!makeForm.email) {
-      setMsg({ type: "err", text: "Email wajib diisi." });
-      return;
-    }
-    setIsLoading(true);
-    setMsg(null);
-    try {
-      const users = await findUserByEmailApi(makeForm.email);
-      const found = Array.isArray(users) ? users[0] : users;
-      if (!found) {
-        setMsg({ type: "err", text: "User tidak ditemukan." });
-        setIsLoading(false);
-        return;
-      }
-      await updateUserRoleApi(found.id, {
-        role: "admin",
-        adminDuration: makeForm.duration,
-      });
-      setMsg({
-        type: "ok",
-        text: `${found.fullName} berhasil dijadikan admin!`,
-      });
-      setMakeForm({ email: "", duration: "30 hari" });
-      setAdmins(await fetchAdminsApi());
-    } catch (e: any) {
-      setMsg({
-        type: "err",
-        text: e.response?.data?.message || "Gagal memperbarui role.",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // ── Delete admin ──────────────────────────────────────────────────────────
-  const handleDeleteAdmin = async (id: string, name: string) => {
-    if (!confirm(`Hapus akses admin untuk ${name}?`)) return;
-    try {
-      await deleteUserApi(id);
-      setAdmins((prev) => prev.filter((a) => a.id !== id));
-      setMsg({ type: "ok", text: `Akses admin ${name} telah dicabut.` });
-    } catch {
-      setMsg({ type: "err", text: "Gagal menghapus admin." });
-    }
-  };
-
   const displayUser = userData || user;
   const displayName = displayUser?.fullName || displayUser?.name || "Admin";
   const displayEmail = displayUser?.email || "";
@@ -410,33 +283,6 @@ export default function AdminSidebarModal({
     display: "block",
     marginBottom: "5px",
   };
-
-  const isOwner = user?.role === "owner";
-
-  const tabs = [
-    {
-      key: "account" as Tab,
-      label: "⚙ Setting Account",
-      active: "#16a34a",
-      inactive: "#166534",
-    },
-    ...(isOwner
-      ? [
-          {
-            key: "add-admin" as Tab,
-            label: "+ Tambah Admin",
-            active: "#9333ea",
-            inactive: "#581c87",
-          },
-          {
-            key: "make-admin" as Tab,
-            label: "→ Jadikan Admin",
-            active: "#2563eb",
-            inactive: "#1e3a8a",
-          },
-        ]
-      : []),
-  ];
 
   return (
     <div
@@ -548,39 +394,19 @@ export default function AdminSidebarModal({
             </div>
           </div>
 
-          {/* Tabs */}
           <div
             style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: "6px",
               marginBottom: "20px",
+              padding: "10px 14px",
+              borderRadius: "8px",
+              border: "1.5px solid #16a34a",
+              background: "rgba(22, 163, 74, 0.12)",
+              color: "#fff",
+              fontSize: "13px",
+              fontWeight: 600,
             }}
           >
-            {tabs.map((t) => (
-              <button
-                key={t.key}
-                onClick={() => {
-                  setActiveTab(t.key);
-                  setMsg(null);
-                }}
-                style={{
-                  padding: "10px 14px",
-                  borderRadius: "8px",
-                  fontSize: "13px",
-                  fontWeight: 600,
-                  cursor: "pointer",
-                  textAlign: "left",
-                  border: `1.5px solid ${activeTab === t.key ? t.active : "#1e2744"}`,
-                  background:
-                    activeTab === t.key ? `${t.active}20` : "transparent",
-                  color: activeTab === t.key ? "#fff" : "#64748b",
-                  transition: "all 0.2s",
-                }}
-              >
-                {t.label}
-              </button>
-            ))}
+            ⚙ Setting Account
           </div>
 
           {/* Feedback */}
@@ -604,10 +430,9 @@ export default function AdminSidebarModal({
           )}
 
           {/* ── FORM: Setting Account ── */}
-          {activeTab === "account" && (
-            <div
-              style={{ display: "flex", flexDirection: "column", gap: "14px" }}
-            >
+          <div
+            style={{ display: "flex", flexDirection: "column", gap: "14px" }}
+          >
               {/* Profile pic */}
               <div>
                 <label style={labelCls}>Foto Profil</label>
@@ -920,121 +745,6 @@ export default function AdminSidebarModal({
                 {isSaving ? "Menyimpan..." : "Simpan Perubahan"}
               </button>
             </div>
-          )}
-
-          {/* ── FORM: Tambah Admin ── */}
-          {activeTab === "add-admin" && (
-            <form
-              onSubmit={handleAddAdmin}
-              style={{ display: "flex", flexDirection: "column", gap: "14px" }}
-            >
-              <div>
-                <label style={labelCls}>Nama Lengkap</label>
-                <input
-                  style={inputCls}
-                  type="text"
-                  value={addForm.fullName}
-                  onChange={(e) =>
-                    setAddForm({ ...addForm, fullName: e.target.value })
-                  }
-                  placeholder="Budi Santoso"
-                />
-              </div>
-              <div>
-                <label style={labelCls}>Email</label>
-                <input
-                  style={inputCls}
-                  type="email"
-                  value={addForm.email}
-                  onChange={(e) =>
-                    setAddForm({ ...addForm, email: e.target.value })
-                  }
-                  placeholder="admin@saafragrance.com"
-                />
-              </div>
-              <div>
-                <label style={labelCls}>Password</label>
-                <input
-                  style={inputCls}
-                  type="password"
-                  value={addForm.password}
-                  onChange={(e) =>
-                    setAddForm({ ...addForm, password: e.target.value })
-                  }
-                  placeholder="Minimal 6 karakter"
-                />
-              </div>
-              <button
-                type="submit"
-                disabled={isLoading}
-                style={{
-                  padding: "11px",
-                  borderRadius: "8px",
-                  background: "#9333ea",
-                  border: "none",
-                  color: "#fff",
-                  fontSize: "13px",
-                  fontWeight: 600,
-                  cursor: isLoading ? "not-allowed" : "pointer",
-                  opacity: isLoading ? 0.6 : 1,
-                }}
-              >
-                {isLoading ? "Memproses..." : "+ Daftarkan Admin"}
-              </button>
-            </form>
-          )}
-
-          {/* ── FORM: Jadikan Admin ── */}
-          {activeTab === "make-admin" && (
-            <form
-              onSubmit={handleMakeAdmin}
-              style={{ display: "flex", flexDirection: "column", gap: "14px" }}
-            >
-              <div>
-                <label style={labelCls}>Email Pengguna Aktif</label>
-                <input
-                  style={inputCls}
-                  type="email"
-                  value={makeForm.email}
-                  onChange={(e) =>
-                    setMakeForm({ ...makeForm, email: e.target.value })
-                  }
-                  placeholder="email.user@gmail.com"
-                />
-              </div>
-              <div>
-                <label style={labelCls}>Durasi Admin</label>
-                <select
-                  value={makeForm.duration}
-                  onChange={(e) =>
-                    setMakeForm({ ...makeForm, duration: e.target.value })
-                  }
-                  style={{ ...inputCls, appearance: "none" as const }}
-                >
-                  <option value="7 hari">7 Hari</option>
-                  <option value="30 hari">30 Hari</option>
-                  <option value="permanent">Permanent</option>
-                </select>
-              </div>
-              <button
-                type="submit"
-                disabled={isLoading}
-                style={{
-                  padding: "11px",
-                  borderRadius: "8px",
-                  background: "#2563eb",
-                  border: "none",
-                  color: "#fff",
-                  fontSize: "13px",
-                  fontWeight: 600,
-                  cursor: isLoading ? "not-allowed" : "pointer",
-                  opacity: isLoading ? 0.6 : 1,
-                }}
-              >
-                {isLoading ? "Memproses..." : "→ Jadikan Admin"}
-              </button>
-            </form>
-          )}
         </div>
 
         {/* ── GAP transparan ────────────────────────────────────────────── */}
@@ -1053,8 +763,7 @@ export default function AdminSidebarModal({
           }}
         >
           {/* ── Right: Biodata ── */}
-          {activeTab === "account" && (
-            <div>
+          <div>
               <div
                 style={{
                   fontSize: "14px",
@@ -1136,184 +845,6 @@ export default function AdminSidebarModal({
                 </div>
               )}
             </div>
-          )}
-
-          {/* ── Right: Daftar Admin ── */}
-          {(activeTab === "add-admin" || activeTab === "make-admin") && (
-            <div>
-              <div
-                style={{
-                  fontSize: "14px",
-                  fontWeight: 600,
-                  color: "#fff",
-                  marginBottom: "16px",
-                  paddingBottom: "12px",
-                  borderBottom: "1px solid #1e2744",
-                }}
-              >
-                Daftar Admin Aktif
-              </div>
-              {isFetchingAdmins ? (
-                <div
-                  style={{
-                    textAlign: "center",
-                    padding: "32px 0",
-                    color: "#64748b",
-                    fontSize: "13px",
-                  }}
-                >
-                  Memuat data...
-                </div>
-              ) : admins.length === 0 ? (
-                <div
-                  style={{
-                    textAlign: "center",
-                    padding: "32px 0",
-                    color: "#64748b",
-                    fontSize: "13px",
-                  }}
-                >
-                  Belum ada admin lain yang terdaftar.
-                </div>
-              ) : (
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "8px",
-                  }}
-                >
-                  {admins.map((admin) => (
-                    <div
-                      key={admin.id}
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                        padding: "12px",
-                        background: "#0f1117",
-                        borderRadius: "8px",
-                        border: "1px solid #1e2744",
-                      }}
-                    >
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "10px",
-                        }}
-                      >
-                        <div
-                          style={{
-                            width: "34px",
-                            height: "34px",
-                            borderRadius: "50%",
-                            overflow: "hidden",
-                            flexShrink: 0,
-                            border: "1.5px solid #7c3aed",
-                          }}
-                        >
-                          {admin.profilePic ? (
-                            <img
-                              src={admin.profilePic}
-                              style={{
-                                width: "100%",
-                                height: "100%",
-                                objectFit: "cover",
-                              }}
-                            />
-                          ) : (
-                            <div
-                              style={{
-                                width: "100%",
-                                height: "100%",
-                                background: "#7c3aed",
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                color: "#fff",
-                                fontSize: "13px",
-                                fontWeight: 700,
-                              }}
-                            >
-                              {(admin.fullName ||
-                                admin.name ||
-                                "A")[0].toUpperCase()}
-                            </div>
-                          )}
-                        </div>
-                        <div>
-                          <div
-                            style={{
-                              fontSize: "13px",
-                              color: "#fff",
-                              fontWeight: 500,
-                            }}
-                          >
-                            {admin.fullName || admin.name}
-                          </div>
-                          <div style={{ fontSize: "11px", color: "#64748b" }}>
-                            {admin.email}
-                          </div>
-                          {admin.role && (
-                            <div
-                              style={{
-                                fontSize: "10px",
-                                color: "#7c3aed",
-                                marginTop: "2px",
-                                textTransform: "uppercase",
-                                letterSpacing: "0.05em",
-                              }}
-                            >
-                              {admin.role}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                      <button
-                        onClick={() =>
-                          handleDeleteAdmin(
-                            admin.id,
-                            admin.fullName || admin.name,
-                          )
-                        }
-                        style={{
-                          padding: "6px 8px",
-                          borderRadius: "6px",
-                          background: "transparent",
-                          border: "1px solid #374151",
-                          color: "#ef4444",
-                          cursor: "pointer",
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "4px",
-                          fontSize: "11px",
-                        }}
-                        title="Cabut akses admin"
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="13"
-                          height="13"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                          />
-                        </svg>
-                        Hapus
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
         </div>
       </div>
     </div>

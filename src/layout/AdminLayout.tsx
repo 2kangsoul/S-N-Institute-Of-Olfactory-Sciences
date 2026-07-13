@@ -118,12 +118,14 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
     { icon: LayoutDashboard, label: "Dashboard", path: "/admin" },
     { icon: BookOpen, label: "Program", path: "/program" },
     { icon: BarChart2, label: "Laporan", path: "/admin/laporan" },
-    { icon: Package, label: "Produk", path: "/products" },
+    { icon: Package, label: "Produk", path: "/admin/products" },
   ];
 
   const otherNav = [
     { icon: Sparkles, label: "Perfume", path: "/awards" },
-    { icon: Users, label: "Users", path: "/admin" },
+    ...(user?.role === "owner"
+      ? [{ icon: Users, label: "Users", path: "/admin/users" }]
+      : []),
     { icon: DollarSign, label: "Expenses", path: "/admin" },
     { icon: ClipboardList, label: "Orders", path: "/admin" },
   ];
@@ -303,7 +305,10 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
               icon={item.icon}
               label={item.label}
               active={isActive(item.path)}
-              onClick={() => router.push(item.path)}
+              onClick={() => {
+                setShowSidebar(false);
+                router.push(item.path);
+              }}
             />
           ))}
         </div>
@@ -327,7 +332,10 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
               icon={item.icon}
               label={item.label}
               active={isActive(item.path)}
-              onClick={() => router.push(item.path)}
+              onClick={() => {
+                setShowSidebar(false);
+                router.push(item.path);
+              }}
             />
           ))}
         </div>

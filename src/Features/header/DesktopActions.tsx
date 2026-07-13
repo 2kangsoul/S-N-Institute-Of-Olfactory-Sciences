@@ -15,10 +15,6 @@ export default function DesktopActions(props: DesktopActionsProps) {
     isAuthenticated,
     user,
     logout,
-    isManageMenuOpen,
-    setIsManageMenuOpen,
-    setIsAdminModalOpen,
-    setIsPerfumeModalOpen,
     setIsBlogModalOpen,
     setIsRegisterModalOpen,
     setIsAccountModalOpen, // <-- Perbaikan baris 20
@@ -34,11 +30,7 @@ export default function DesktopActions(props: DesktopActionsProps) {
           {/* --- BAGIAN YANG DIUBAH: Dropdown Hai, {user?.name} --- */}
           <div className="relative">
             <button
-              onClick={() => {
-                setIsAccountMenuOpen(!isAccountMenuOpen);
-                // Menutup menu Manage jika sedang terbuka
-                if (setIsManageMenuOpen) setIsManageMenuOpen(false);
-              }}
+              onClick={() => setIsAccountMenuOpen(!isAccountMenuOpen)}
               className="text-sm font-medium text-gray-100 hover:text-gray-200 flex items-center gap-1 cursor-pointer"
             >
               Hai, {user?.name || user?.fullname || "..."}
@@ -99,82 +91,15 @@ export default function DesktopActions(props: DesktopActionsProps) {
           </div>
           {/* --- AKHIR BAGIAN YANG DIUBAH --- */}
 
-          {/* LOGIKA ROLE UNTUK DESKTOP */}
-          {user?.role === "owner" || user?.role === "admin" ? (
-            <div className="relative">
-              <button
-                onClick={() => {
-                  if (setIsManageMenuOpen)
-                    setIsManageMenuOpen(!isManageMenuOpen);
-                  // Menutup menu Account jika sedang terbuka
-                  setIsAccountMenuOpen(false);
-                }}
-                className="flex items-center gap-1 px-3 py-1 bg-gray-100 text-black font-bold hover:bg-gray-200 transition-colors rounded-md"
-              >
-                Manage
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-4 w-4"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 9l-7 7-7-7"
-                  />
-                </svg>
-              </button>
-
-              {isManageMenuOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg py-1 z-50 flex flex-col">
-                  <button
-                    onClick={() => {
-                      if (setIsManageMenuOpen) setIsManageMenuOpen(false);
-                      if (setIsPerfumeModalOpen) setIsPerfumeModalOpen(true);
-                    }}
-                    className="text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 font-medium"
-                  >
-                    📦 Manage Parfume
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      if (setIsManageMenuOpen) setIsManageMenuOpen(false);
-                      if (setIsBlogModalOpen) setIsBlogModalOpen(true);
-                    }}
-                    className="text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 font-medium border-t border-gray-100"
-                  >
-                    ✍️ Manage Blog
-                  </button>
-
-                  {user?.role === "owner" && (
-                    <button
-                      onClick={() => {
-                        if (setIsManageMenuOpen) setIsManageMenuOpen(false);
-                        if (setIsAdminModalOpen) setIsAdminModalOpen(true);
-                      }}
-                      className="text-left px-4 py-2 text-sm text-blue-600 hover:bg-blue-50 font-medium border-t border-gray-100"
-                    >
-                      ⚙️ Setting Admin
-                    </button>
-                  )}
-                </div>
-              )}
-            </div>
-          ) : (
-            <button
-              onClick={() => {
-                if (setIsBlogModalOpen) setIsBlogModalOpen(true);
-                setIsAccountMenuOpen(false);
-              }}
-              className="flex items-center gap-1 px-3 py-1 bg-gray-900 text-white font-bold hover:bg-gray-800 transition-colors rounded-md"
-            >
-              ✍️ Manage Blog
-            </button>
-          )}
+          <button
+            onClick={() => {
+              if (setIsBlogModalOpen) setIsBlogModalOpen(true);
+              setIsAccountMenuOpen(false);
+            }}
+            className="flex items-center gap-1 px-3 py-1 bg-gray-900 text-white font-bold hover:bg-gray-800 transition-colors rounded-md"
+          >
+            ✍️ Manage Blog
+          </button>
 
           <button
             onClick={logout}

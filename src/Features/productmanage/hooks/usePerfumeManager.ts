@@ -5,7 +5,7 @@ import toast from "react-hot-toast";
 import type { Product, PerfumeFormData } from "../types/types"
 import { fetchProductsApi, addProductApi, deleteProductApi } from "../api/api"
 
-export function usePerfumeManager(isOpen: boolean) {
+export function usePerfumeManager() {
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isFetching, setIsFetching] = useState(false);
@@ -36,12 +36,10 @@ export function usePerfumeManager(isOpen: boolean) {
   };
 
   useEffect(() => {
-    if (isOpen) {
-      fetchProducts();
-      setSearchTerm("");
-      setCurrentPage(1);
-    }
-  }, [isOpen]);
+    fetchProducts();
+    setSearchTerm("");
+    setCurrentPage(1);
+  }, []);
 
   useEffect(() => {
     setCurrentPage(1);

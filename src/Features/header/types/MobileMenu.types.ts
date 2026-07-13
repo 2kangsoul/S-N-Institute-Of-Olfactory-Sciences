@@ -5,8 +5,6 @@ export interface MobileMenuProps {
   setIsMobileMenuOpen: React.Dispatch<React.SetStateAction<boolean>>;
   isAuthenticated: boolean;
   user: any;
-  logout: () => void;
-  setIsAdminModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  setIsPerfumeModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  logout: () => Promise<void>;
   setIsBlogModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }

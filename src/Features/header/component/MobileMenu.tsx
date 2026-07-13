@@ -17,9 +17,7 @@ export default function MobileMenu(props: ExtendedMobileMenuProps) {
     user,
     toggleMenu,
     closeMenu,
-    handleManagePerfume,
     handleManageBlog,
-    handleSettingAdmin,
     handleLogout,
   } = useMobileMenu(props);
 
@@ -103,40 +101,12 @@ export default function MobileMenu(props: ExtendedMobileMenuProps) {
                 Hai, {user?.name}
               </span>
 
-              {/* LOGIKA ROLE UNTUK MOBILE */}
-              {user?.role === "owner" || user?.role === "admin" ? (
-                <div className="flex flex-col gap-3 pl-3 border-l-2 border-gray-300">
-                  <button
-                    onClick={handleManagePerfume}
-                    className="w-max px-4 py-2 bg-gray-900 text-white font-bold hover:bg-gray-800 transition-colors rounded-md text-sm"
-                  >
-                    📦 Manage Parfume
-                  </button>
-
-                  <button
-                    onClick={handleManageBlog}
-                    className="w-max px-4 py-2 bg-gray-900 text-white font-bold hover:bg-gray-800 transition-colors rounded-md text-sm"
-                  >
-                    ✍️ Manage Blog
-                  </button>
-
-                  {user?.role === "owner" && (
-                    <button
-                      onClick={handleSettingAdmin}
-                      className="w-max px-4 py-2 bg-blue-600 text-white font-bold hover:bg-blue-700 transition-colors rounded-md text-sm"
-                    >
-                      ⚙️ Setting Admin
-                    </button>
-                  )}
-                </div>
-              ) : (
-                <button
-                  onClick={handleManageBlog}
-                  className="w-max px-4 py-2 bg-gray-900 text-white font-bold hover:bg-gray-800 transition-colors rounded-md text-sm"
-                >
-                  ✍️ Manage Blog
-                </button>
-              )}
+              <button
+                onClick={handleManageBlog}
+                className="w-max px-4 py-2 bg-gray-900 text-white font-bold hover:bg-gray-800 transition-colors rounded-md text-sm"
+              >
+                ✍️ Manage Blog
+              </button>
 
               <button
                 onClick={handleLogout}
