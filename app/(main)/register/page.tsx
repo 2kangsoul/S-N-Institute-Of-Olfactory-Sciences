@@ -4,34 +4,34 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import { AxiosError } from "axios";
-import { useLogin } from "@/src/Features/Auth/auth.hooks";
+import { useRegister } from "@/src/Features/Auth/auth.hooks";
 import {
-  authLoginValidation,
-  AuthLoginType,
+  authRegisterValidation,
+  AuthRegisterType,
 } from "@/src/Features/Auth/auth.validation";
 import { ApiResponse } from "@/src/types/api-response.type";
 
-export default function LoginPage() {
+export default function RegisterPage() {
   const router = useRouter();
-  const login = useLogin();
+  const registerMutation = useRegister();
 
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<AuthLoginType>({
-    resolver: zodResolver(authLoginValidation),
+  } = useForm<AuthRegisterType>({
+    resolver: zodResolver(authRegisterValidation),
   });
 
-  const onSubmit = (values: AuthLoginType) => {
-    login.mutate(values, {
+  const onSubmit = (values: AuthRegisterType) => {
+    registerMutation.mutate(values, {
       onSuccess: () => {
-        toast.success("Login successful!");
-        router.push("/dashboard");
+        toast.success("Register successful! Please login.");
+        router.push("/login");
       },
       onError: (error) => {
         const err = error as AxiosError<ApiResponse<null>>;
-        toast.error(err.response?.data?.message || "Login failed");
+        toast.error(err.response?.data?.message || "Register failed");
       },
     });
   };
@@ -68,7 +68,7 @@ export default function LoginPage() {
             marginBottom: "10px",
           }}
         >
-          Welcome Back
+          Create Account
         </h1>
 
         <p
@@ -79,11 +79,91 @@ export default function LoginPage() {
             fontSize: "15px",
           }}
         >
-          Sign in to continue to your account
+          Create your account to get started
         </p>
 
         <form onSubmit={handleSubmit(onSubmit)}>
-          <div style={{ marginBottom: "20px" }}>
+          <div style={{ marginBottom: "18px" }}>
+            <label
+              htmlFor="fullName"
+              style={{
+                display: "block",
+                color: "#e2e8f0",
+                marginBottom: "8px",
+                fontSize: "14px",
+                fontWeight: 500,
+              }}
+            >
+              Full Name
+            </label>
+
+            <input
+              id="fullName"
+              type="text"
+              placeholder="Enter your full name"
+              {...register("fullName")}
+              style={{
+                width: "100%",
+                padding: "15px",
+                borderRadius: "10px",
+                border: "1px solid #475569",
+                background: "#0f172a",
+                color: "#fff",
+                fontSize: "15px",
+                outline: "none",
+                boxSizing: "border-box",
+              }}
+            />
+            {errors.fullName && (
+              <p
+                style={{ color: "#ef4444", fontSize: "12px", marginTop: "6px" }}
+              >
+                {errors.fullName.message}
+              </p>
+            )}
+          </div>
+
+          <div style={{ marginBottom: "18px" }}>
+            <label
+              htmlFor="username"
+              style={{
+                display: "block",
+                color: "#e2e8f0",
+                marginBottom: "8px",
+                fontSize: "14px",
+                fontWeight: 500,
+              }}
+            >
+              Username
+            </label>
+
+            <input
+              id="username"
+              type="text"
+              placeholder="Choose a username"
+              {...register("username")}
+              style={{
+                width: "100%",
+                padding: "15px",
+                borderRadius: "10px",
+                border: "1px solid #475569",
+                background: "#0f172a",
+                color: "#fff",
+                fontSize: "15px",
+                outline: "none",
+                boxSizing: "border-box",
+              }}
+            />
+            {errors.username && (
+              <p
+                style={{ color: "#ef4444", fontSize: "12px", marginTop: "6px" }}
+              >
+                {errors.username.message}
+              </p>
+            )}
+          </div>
+
+          <div style={{ marginBottom: "18px" }}>
             <label
               htmlFor="email"
               style={{
@@ -140,7 +220,7 @@ export default function LoginPage() {
             <input
               id="password"
               type="password"
-              placeholder="Enter your password"
+              placeholder="Create a password"
               {...register("password")}
               style={{
                 width: "100%",
@@ -165,20 +245,22 @@ export default function LoginPage() {
 
           <button
             type="submit"
-            disabled={login.isPending}
+            disabled={registerMutation.isPending}
             style={{
               width: "100%",
               padding: "15px",
               border: "none",
               borderRadius: "10px",
-              background: login.isPending ? "#475569" : "#2563eb",
+              background: registerMutation.isPending ? "#475569" : "#2563eb",
               color: "#fff",
               fontSize: "15px",
               fontWeight: 600,
-              cursor: login.isPending ? "not-allowed" : "pointer",
+              cursor: registerMutation.isPending ? "not-allowed" : "pointer",
             }}
           >
-            {login.isPending ? "Signing In..." : "Sign In"}
+            {registerMutation.isPending
+              ? "Creating Account..."
+              : "Create Account"}
           </button>
         </form>
 
@@ -190,16 +272,16 @@ export default function LoginPage() {
             fontSize: "14px",
           }}
         >
-          Don't have an account?{" "}
+          Already have an account?{" "}
           <a
-            href="/register"
+            href="/login"
             style={{
               color: "#3b82f6",
               textDecoration: "none",
               fontWeight: 600,
             }}
           >
-            Sign Up
+            Sign In
           </a>
         </p>
       </div>
