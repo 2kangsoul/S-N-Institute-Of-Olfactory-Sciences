@@ -19,11 +19,11 @@ import {
   X,
 } from "lucide-react";
 import AdminSidebarModal from "../Features/Admin/AdminModal/AdminSidebarModal";
-
+ 
 interface AdminLayoutProps {
   children: React.ReactNode;
 }
-
+ 
 const NavItem = ({ icon: Icon, label, active = false, onClick }: any) => (
   <div
     onClick={onClick}
@@ -57,32 +57,35 @@ const NavItem = ({ icon: Icon, label, active = false, onClick }: any) => (
     {label}
   </div>
 );
-
+ 
 const AdminLayout = ({ children }: AdminLayoutProps) => {
   const { isAuthenticated, isAuthLoading, user } = useAuthStore();
   const [showModal, setShowModal] = useState(false);
   const [showSidebar, setShowSidebar] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
-
+ 
   // Hindari mismatch SSR: evaluasi auth setelah mount
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
-
+ 
+  // FIX: role di backend (Prisma enum) itu UPPERCASE -> "ADMIN" | "SUPER_ADMIN" | "USER"
+  // Sebelumnya di sini dicek lowercase ("admin"/"owner") sehingga admin asli selalu
+  // dianggap "denied" dan langsung ke-redirect ke landing page.
   const denied =
     !isAuthenticated ||
-    (!!user?.role && user?.role !== "admin" && user?.role !== "owner");
-
+    (!!user?.role && user?.role !== "ADMIN" && user?.role !== "SUPER_ADMIN");
+ 
   useEffect(() => {
     // Tunggu isAuthLoading selesai (verifikasi cookie ke /auth/me) sebelum redirect,
     // supaya admin yang sesinya masih valid tidak kelempar keluar karena race condition.
     if (mounted && !isAuthLoading && denied) router.replace("/");
   }, [mounted, isAuthLoading, denied, router]);
-
+ 
   if (!mounted || isAuthLoading) return null;
-
+ 
   if (!isAuthenticated) return null; // sedang redirect ke "/"
-
+ 
   if (isAuthenticated && !user?.role) {
     return (
       <div
@@ -108,28 +111,29 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
       </div>
     );
   }
-
-  if (user?.role !== "admin" && user?.role !== "owner") return null; // sedang redirect ke "/"
-
+ 
+  // FIX: samain dengan pengecekan di atas (UPPERCASE)
+  if (user?.role !== "ADMIN" && user?.role !== "SUPER_ADMIN") return null; // sedang redirect ke "/"
+ 
   const displayName = user?.name || user?.fullName || "Admin";
   const displayInitial = displayName[0].toUpperCase();
-
+ 
   const mainNav = [
     { icon: LayoutDashboard, label: "Dashboard", path: "/admin" },
     { icon: BookOpen, label: "Program", path: "/program" },
     { icon: BarChart2, label: "Laporan", path: "/admin/laporan" },
     { icon: Package, label: "Produk", path: "/products" },
   ];
-
+ 
   const otherNav = [
     { icon: Sparkles, label: "Perfume", path: "/awards" },
     { icon: Users, label: "Users", path: "/admin" },
     { icon: DollarSign, label: "Expenses", path: "/admin" },
     { icon: ClipboardList, label: "Orders", path: "/admin" },
   ];
-
+ 
   const isActive = (path: string) => pathname === path;
-
+ 
   return (
     <div
       className="portal-layout"
@@ -146,12 +150,12 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
         isOpen={showModal}
         onClose={() => setShowModal(false)}
       />
-
+ 
       <style>{`
         .portal-mobile-bar { display: none; }
         .portal-overlay { display: none; }
         .portal-sidebar-close { display: none; }
-
+ 
         @media (max-width: 768px) {
           .portal-layout { display: block !important; }
           .portal-mobile-bar {
@@ -200,7 +204,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
           .portal-content { padding: 14px !important; }
         }
       `}</style>
-
+ 
       <div className="portal-mobile-bar">
         <Link href="/" style={{ display: "flex", alignItems: "center" }}>
           <img
@@ -228,12 +232,12 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
           <Menu size={18} />
         </button>
       </div>
-
+ 
       <div
         className={`portal-overlay ${showSidebar ? "open" : ""}`}
         onClick={() => setShowSidebar(false)}
       />
-
+ 
       {/* SIDEBAR */}
       <div
         className={`portal-sidebar ${showSidebar ? "open" : ""}`}
@@ -283,7 +287,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
             />
           </Link>
         </div>
-
+ 
         {/* Main nav */}
         <div style={{ padding: "4px 8px" }}>
           <div
@@ -307,7 +311,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
             />
           ))}
         </div>
-
+ 
         {/* Other nav */}
         <div style={{ padding: "4px 8px", marginTop: "8px" }}>
           <div
@@ -331,7 +335,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
             />
           ))}
         </div>
-
+ 
         {/* Bottom */}
         <div style={{ marginTop: "auto", padding: "12px 8px 0" }}>
           <NavItem
@@ -346,7 +350,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
             active={false}
             onClick={() => router.push("/")}
           />
-
+ 
           {/* User profile */}
           <div
             onClick={() => setShowModal(true)}
@@ -403,7 +407,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
           </div>
         </div>
       </div>
-
+ 
       {/* MAIN CONTENT */}
       <div
         className="portal-content"
@@ -420,5 +424,6 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
     </div>
   );
 };
-
+ 
 export default AdminLayout;
+ 

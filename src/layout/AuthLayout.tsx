@@ -26,16 +26,23 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
   // =========================================================================
 
   const guestOnlyRoutes = ["/login", "/register"];
-  const publicRoutes = ["/"];
+  // FIX: "/products" ditambahkan ke publicRoutes supaya orang yang belum login
+  // tetap bisa browse produk (sesuai backend: GET /products/get memang publik,
+  // tidak pakai AuthMiddleware.authenticated).
+  const publicRoutes = ["/", "/products"];
 
   // SKENARIO A: Orang SUDAH LOGIN, tapi iseng tekan tombol Back ke /login atau /register
   const redirectHome = isAuthenticated && guestOnlyRoutes.includes(pathname);
 
   // SKENARIO B: Orang BELUM LOGIN, tapi maksa mau masuk ke halaman dalam
+  // FIX: pakai startsWith juga (bukan cuma exact match) supaya rute turunan
+  // seperti /products/<id> (detail produk) ikut kebawa publik.
   const redirectLogin =
     !isAuthenticated &&
     !guestOnlyRoutes.includes(pathname) &&
-    !publicRoutes.includes(pathname);
+    !publicRoutes.some(
+      (route) => pathname === route || pathname.startsWith(route + "/")
+    );
 
   useEffect(() => {
     // Tunggu fetchCurrentUser() ke server selesai dulu sebelum memutuskan redirect,

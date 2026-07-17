@@ -2,6 +2,7 @@ import "@mantine/core/styles.css";
 import "../src/index.css";
 
 import type { Metadata } from "next";
+import { Toaster } from "sonner";
 import { ColorSchemeScript, mantineHtmlProps } from "@mantine/core";
 import Providers from "./providers";
 import { ToastContainer } from "react-toastify";
@@ -48,6 +49,7 @@ export default function RootLayout({
         <Providers>
           <ToastContainer />
           {children}
+          <Toaster theme="dark" position="top-right" richColors />
         </Providers>
       </body>
     </html>

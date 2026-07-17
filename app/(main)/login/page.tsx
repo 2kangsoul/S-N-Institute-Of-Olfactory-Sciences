@@ -27,7 +27,7 @@ export default function LoginPage() {
     login.mutate(values, {
       onSuccess: () => {
         toast.success("Login successful!");
-        router.push("/dashboard");
+        router.push("/");
       },
       onError: (error) => {
         const err = error as AxiosError<ApiResponse<null>>;
