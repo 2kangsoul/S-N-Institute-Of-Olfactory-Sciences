@@ -1,5 +1,5 @@
-// @ts-nocheck
-/* eslint-disable */
+"use client";
+
 import { useState } from "react";
 import Link from "next/link";
 import type { UseMainLayoutReturn } from "../header/types/MainLayout.types";
@@ -9,6 +9,8 @@ import DesktopActions from "./DesktopActions";
 import MobileMenu from "../../Features/header/component/MobileMenu";
 import SettingsAccountModal from "../../Features/settingsaccountmodal/SettingsAccountModal";
 
+import { useMe, useLogout } from "@/src/Features/Auth/auth.hooks";
+
 interface HeaderProps extends UseMainLayoutReturn {
   setIsRegisterModalOpen?: (val: boolean) => void;
   setIsAccountModalOpen?: (val: boolean) => void;
@@ -16,14 +18,20 @@ interface HeaderProps extends UseMainLayoutReturn {
 }
 
 export default function Header(props: HeaderProps) {
-  const { isScrolled, user } = props;
+  const { isScrolled } = props;
 
   const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
+
+  const { data: user, isLoading } = useMe();
+  const logoutMutation = useLogout();
+
+  const handleLogout = async () => {
+    await logoutMutation.mutateAsync();
+  };
 
   return (
     <>
       <header
-        // Mengurangi py-4 menjadi py-2 dan py-2 menjadi py-1 agar header lebih tipis
         className={`flex justify-between items-center px-6 sticky top-0 z-50 transition-all duration-500 ${
           isScrolled
             ? "bg-[#000000]/90 backdrop-blur-md shadow-sm py-1"
@@ -34,29 +42,28 @@ export default function Header(props: HeaderProps) {
           <img
             src="/SNN.jpeg"
             alt="SNN Institute Of Olfactory Sciences Logo"
-            className="h-10 transition duration-300 hover:brightness-110 object-contain" // Sedikit diperkecil dari h-10 ke h-8 agar proporsional
+            className="h-10 transition duration-300 hover:brightness-110 object-contain"
           />
         </Link>
 
-        {/* Komponen Navigasi Desktop (Tengah) */}
         <DesktopNav />
 
-        {/* Komponen Aksi Desktop (Kanan) */}
         <DesktopActions
           {...props}
+          user={user}
+          isAuthenticated={!!user}
+          logout={handleLogout}
           setIsAccountModalOpen={setIsAccountModalOpen}
         />
 
-        {/* Komponen Menu Mobile (Tombol dan Dropdown) */}
-        <MobileMenu {...props} />
+        <MobileMenu
+          {...props}
+          user={user}
+          isAuthenticated={!!user}
+          logout={handleLogout}
+        />
       </header>
 
-      {/* --- TAMBAHAN: Menampilkan Pop-up Account Settings ---
-          FIX: dirender kondisional (isAccountModalOpen && ...) supaya komponen
-          SettingsAccountModal baru mount saat modal benar-benar dibuka.
-          Sebelumnya modal ini selalu mounted di setiap halaman (karena Header
-          global), sehingga useEffect fetch /api/countries di dalamnya ikut
-          jalan terus-menerus di semua route walau modal belum pernah dibuka. */}
       {isAccountModalOpen && (
         <SettingsAccountModal
           isOpen={isAccountModalOpen}

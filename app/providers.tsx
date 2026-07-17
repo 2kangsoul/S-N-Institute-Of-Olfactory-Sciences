@@ -1,25 +1,18 @@
 "use client";
 
-import { useEffect } from "react";
 import { MantineProvider } from "@mantine/core";
-import { Toaster } from "react-hot-toast";
-import { useAuthStore } from "@/src/stores/useAuthStore";
-import ChatBot from "@/src/Features/chatbot/Components/ChatBot";
+// import ChatBot from "@/src/Features/chatbot/Components/ChatBot";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { queryClient } from "@/src/lib/queryClient";
 
 export default function Providers({ children }: { children: React.ReactNode }) {
-  const { fetchCurrentUser } = useAuthStore();
-
-  // Sama seperti App.tsx lama: restore sesi user saat pertama load
-  useEffect(() => {
-    fetchCurrentUser();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   return (
-    <MantineProvider>
-      <Toaster position="top-center" containerStyle={{ zIndex: 999999 }} />
-      {children}
-      <ChatBot />
-    </MantineProvider>
+    <QueryClientProvider client={queryClient}>
+      <MantineProvider>
+        {children}
+        {/* <ChatBot /> */}
+      </MantineProvider>
+    </QueryClientProvider>
   );
 }

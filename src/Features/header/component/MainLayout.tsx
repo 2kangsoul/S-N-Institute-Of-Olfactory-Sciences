@@ -7,10 +7,6 @@ import { useMainLayout } from "../hooks/useMainLayout";
 import AdminManagerModal from "../../adminmanage/component/AdminManagerModal";
 import PerfumeManagerModal from "../../productmanage/component/PerfumeManagerModal";
 import BlogManagerModal from "../../blogmanage/component/BlogManagerModal";
-
-// --- TAMBAHAN: Import Register Modal dari folder Anda ---
-import RegisterModal from "../../registermodal/RegisterModal";
-
 import Header from "../Header";
 import FooterLayout from "../FooterLayout";
 
@@ -22,7 +18,6 @@ export default function MainLayout({ children }: { children: ReactNode }) {
 
   return (
     <div className="min-h-screen bg-[#000000]">
-      {/* Oper state tambahan setIsRegisterModalOpen ke Header */}
       <Header
         {...layoutState}
         setIsRegisterModalOpen={setIsRegisterModalOpen}
@@ -49,10 +44,10 @@ export default function MainLayout({ children }: { children: ReactNode }) {
       />
 
       {/* --- TAMBAHAN: Render Register Modal di sini --- */}
-      <RegisterModal
+      {/* <RegisterModal
         isOpen={isRegisterModalOpen}
         onClose={() => setIsRegisterModalOpen(false)}
-      />
+      /> */}
 
       <FooterLayout />
     </div>

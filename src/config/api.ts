@@ -12,19 +12,6 @@ const apiClient = axios.create({
     "Content-Type": "application/json",
   },
 });
-
-// ====================================================================
-// Catatan migrasi auth (httpOnly cookie):
-// Interceptor request yang dulu ambil token dari localStorage("auth-storage")
-// dan pasang header Authorization sudah DIHAPUS. Sekarang browser otomatis
-// mengirim cookie httpOnly "token" di setiap request (berkat withCredentials
-// di atas + CORS credentials:true di backend), jadi tidak perlu lagi
-// menyentuh localStorage untuk auth sama sekali.
-// ====================================================================
-
-// ====================================================================
-// INTERCEPTOR RESPONSE: Global Error Handler (Auto-Logout)
-// ====================================================================
 apiClient.interceptors.response.use(
   (response) => {
     return response;
