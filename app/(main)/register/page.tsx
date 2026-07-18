@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import { AxiosError } from "axios";
-import { useRegister } from "@/src/Features/Auth/auth.hooks";
+import { useRegister } from "@/src/Features/Auth/auth.query";
 import {
   authRegisterValidation,
   AuthRegisterType,

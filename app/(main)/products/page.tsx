@@ -1,11 +1,11 @@
 "use client";
- 
+
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useGetProducts } from "@/src/Features/product-snn/product.query";
 import ProductCard from "@/src/Features/product-snn/components/productCard";
 import { useAuthStore } from "@/src/stores/useAuthStore";
- 
+
 function getPageNumbers(current: number, total: number) {
   const pages: (number | "...")[] = [];
   const range = 1;
@@ -18,7 +18,7 @@ function getPageNumbers(current: number, total: number) {
   }
   return pages;
 }
- 
+
 function ProductCardSkeleton() {
   return (
     <div className="border border-gray-800 rounded-xl overflow-hidden bg-neutral-950 animate-pulse">
@@ -32,15 +32,15 @@ function ProductCardSkeleton() {
     </div>
   );
 }
- 
+
 export default function ProductsPage() {
   const [page, setPage] = useState(1);
   const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
- 
+
   const { user } = useAuthStore();
   const isAdmin = user?.role === "ADMIN" || user?.role === "SUPER_ADMIN";
- 
+
   useEffect(() => {
     const timeout = setTimeout(() => {
       setSearch(searchInput);
@@ -48,11 +48,11 @@ export default function ProductsPage() {
     }, 400);
     return () => clearTimeout(timeout);
   }, [searchInput]);
- 
+
   const { data, isLoading } = useGetProducts({ page, limit: 10, search });
   const meta = data?.meta;
   const products = data?.data ?? [];
- 
+
   return (
     <div className="min-h-screen bg-black text-white">
       <div className="max-w-7xl mx-auto px-6 py-10">
@@ -61,11 +61,11 @@ export default function ProductsPage() {
             <h1 className="text-2xl font-bold">Products</h1>
             {meta && (
               <p className="text-sm text-gray-500 mt-1">
-                {meta.total} produk ditemukan
+                {meta.total} products found
                 {meta.totalPages > 0 && (
                   <>
                     {" "}
-                    &middot; Halaman {meta.page} dari {meta.totalPages}
+                    &middot; Page {meta.page} of {meta.totalPages}
                   </>
                 )}
               </p>
@@ -80,34 +80,34 @@ export default function ProductsPage() {
             </Link>
           )}
         </div>
- 
+
         <div className="relative mb-8 max-w-sm">
           <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M17 10a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
           <input
             type="text"
-            placeholder="Cari produk..."
+            placeholder="Search products..."
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
             className="w-full border border-gray-700 bg-neutral-950 text-white pl-9 pr-3 py-2.5 rounded-lg text-sm focus:outline-none focus:border-gray-500 transition-colors"
           />
         </div>
- 
+
         {isLoading ? (
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
             {Array.from({ length: 10 }).map((_, i) => <ProductCardSkeleton key={i} />)}
           </div>
         ) : products.length === 0 ? (
           <div className="text-center py-20 text-gray-500">
-            <p>Tidak ada produk ditemukan.</p>
+            <p>No products found.</p>
           </div>
         ) : (
           <>
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
               {products.map((product) => <ProductCard key={product.id} product={product} />)}
             </div>
- 
+
             {meta && meta.totalPages > 1 && (
               <div className="flex flex-col items-center gap-2 mt-10">
                 <div className="flex items-center justify-center gap-1">
@@ -142,7 +142,7 @@ export default function ProductsPage() {
                   </button>
                 </div>
                 <p className="text-xs text-gray-500">
-                  Halaman {meta.page} dari {meta.totalPages}
+                  Page {meta.page} of {meta.totalPages}
                 </p>
               </div>
             )}
