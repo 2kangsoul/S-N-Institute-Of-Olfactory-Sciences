@@ -46,13 +46,13 @@ export default function CreateProductPage() {
 
   const validate = () => {
     const newErrors: Record<string, string> = {};
-    if (!name.trim()) newErrors.name = "Nama produk wajib diisi";
-    if (!brand.trim()) newErrors.brand = "Brand wajib diisi";
-    if (!type.trim()) newErrors.type = "Tipe produk wajib diisi";
-    if (!description.trim()) newErrors.description = "Deskripsi wajib diisi";
-    if (!price || Number(price) <= 0) newErrors.price = "Harga harus lebih dari 0";
-    if (stock === "" || Number(stock) < 0) newErrors.stock = "Stok tidak boleh negatif";
-    if (!file) newErrors.file = "Gambar produk wajib diupload";
+    if (!name.trim()) newErrors.name = "Product name is required";
+    if (!brand.trim()) newErrors.brand = "Brand is required";
+    if (!type.trim()) newErrors.type = "Product type is required";
+    if (!description.trim()) newErrors.description = "Description is required";
+    if (!price || Number(price) <= 0) newErrors.price = "Price must be greater than 0";
+    if (stock === "" || Number(stock) < 0) newErrors.stock = "Stock cannot be negative";
+    if (!file) newErrors.file = "Product image is required";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -72,11 +72,11 @@ export default function CreateProductPage() {
 
     createProduct(formData, {
       onSuccess: () => {
-        toast.success("Produk berhasil dibuat");
+        toast.success("Product created successfully");
         router.push("/products");
       },
       onError: (error: any) => {
-        toast.error(error?.response?.data?.message || "Gagal membuat produk");
+        toast.error(error?.response?.data?.message || "Failed to create product");
       },
     });
   };
@@ -90,7 +90,7 @@ export default function CreateProductPage() {
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label className="block text-sm text-gray-400 mb-1.5">Nama Produk</label>
+            <label className="block text-sm text-gray-400 mb-1.5">Product Name</label>
             <input
               type="text"
               value={name}
@@ -114,7 +114,7 @@ export default function CreateProductPage() {
               {errors.brand && <p className="text-red-500 text-xs mt-1">{errors.brand}</p>}
             </div>
             <div>
-              <label className="block text-sm text-gray-400 mb-1.5">Tipe</label>
+              <label className="block text-sm text-gray-400 mb-1.5">Type</label>
               <input
                 type="text"
                 value={type}
@@ -127,20 +127,20 @@ export default function CreateProductPage() {
           </div>
 
           <div>
-            <label className="block text-sm text-gray-400 mb-1.5">Deskripsi</label>
+            <label className="block text-sm text-gray-400 mb-1.5">Description</label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={4}
               className="w-full border border-gray-700 bg-neutral-950 text-white px-3 py-2.5 rounded-lg text-sm focus:outline-none focus:border-gray-500 resize-none"
-              placeholder="Deskripsi produk..."
+              placeholder="Product description..."
             />
             {errors.description && <p className="text-red-500 text-xs mt-1">{errors.description}</p>}
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm text-gray-400 mb-1.5">Harga (Rp)</label>
+              <label className="block text-sm text-gray-400 mb-1.5">Price (Rp)</label>
               <input
                 type="number"
                 min={1}
@@ -152,7 +152,7 @@ export default function CreateProductPage() {
               {errors.price && <p className="text-red-500 text-xs mt-1">{errors.price}</p>}
             </div>
             <div>
-              <label className="block text-sm text-gray-400 mb-1.5">Stok</label>
+              <label className="block text-sm text-gray-400 mb-1.5">Stock</label>
               <input
                 type="number"
                 min={0}
@@ -166,7 +166,7 @@ export default function CreateProductPage() {
           </div>
 
           <div>
-            <label className="block text-sm text-gray-400 mb-1.5">Gambar Produk</label>
+            <label className="block text-sm text-gray-400 mb-1.5">Product Image</label>
             <input
               type="file"
               accept="image/*"
@@ -187,14 +187,14 @@ export default function CreateProductPage() {
               disabled={isPending}
               className="bg-white text-black px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-gray-200 transition-colors disabled:opacity-50"
             >
-              {isPending ? "Menyimpan..." : "Simpan Produk"}
+              {isPending ? "Saving..." : "Save Product"}
             </button>
             <button
               type="button"
               onClick={() => router.back()}
               className="border border-gray-700 px-5 py-2.5 rounded-lg text-sm font-semibold hover:border-gray-500 transition-colors"
             >
-              Batal
+              Cancel
             </button>
           </div>
         </form>

@@ -9,7 +9,7 @@ import DesktopActions from "./DesktopActions";
 import MobileMenu from "../../Features/header/component/MobileMenu";
 import SettingsAccountModal from "../../Features/settingsaccountmodal/SettingsAccountModal";
 
-import { useMe, useLogout } from "@/src/Features/Auth/auth.hooks";
+import { useMe, useLogout } from "@/src/Features/Auth/auth.query";
 
 interface HeaderProps extends UseMainLayoutReturn {
   setIsRegisterModalOpen?: (val: boolean) => void;

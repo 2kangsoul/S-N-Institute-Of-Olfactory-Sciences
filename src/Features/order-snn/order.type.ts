@@ -23,6 +23,13 @@ export interface OrderItem {
   product: OrderProductSnapshot;
 }
 
+export interface OrderUser {
+  id: string;
+  fullName: string;
+  email: string;
+  role: "USER" | "ADMIN" | "SUPER_ADMIN";
+}
+
 export interface Order {
   id: string;
   orderNumber: string;
@@ -30,6 +37,7 @@ export interface Order {
   status: OrderStatus;
   note: string | null;
   createdAt: string;
+  user: OrderUser;
   items: OrderItem[];
 }
 

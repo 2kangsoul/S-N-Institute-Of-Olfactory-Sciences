@@ -61,12 +61,12 @@ export default function EditProductPage() {
 
   const validate = () => {
     const newErrors: Record<string, string> = {};
-    if (!name.trim()) newErrors.name = "Nama produk wajib diisi";
-    if (!brand.trim()) newErrors.brand = "Brand wajib diisi";
-    if (!type.trim()) newErrors.type = "Tipe produk wajib diisi";
-    if (!description.trim()) newErrors.description = "Deskripsi wajib diisi";
-    if (!price || Number(price) <= 0) newErrors.price = "Harga harus lebih dari 0";
-    if (stock === "" || Number(stock) < 0) newErrors.stock = "Stok tidak boleh negatif";
+    if (!name.trim()) newErrors.name = "Product name is required";
+    if (!brand.trim()) newErrors.brand = "Brand is required";
+    if (!type.trim()) newErrors.type = "Product type is required";
+    if (!description.trim()) newErrors.description = "Description is required";
+    if (!price || Number(price) <= 0) newErrors.price = "Price must be greater than 0";
+    if (stock === "" || Number(stock) < 0) newErrors.stock = "Stock cannot be negative";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -88,11 +88,11 @@ export default function EditProductPage() {
       { id, formData },
       {
         onSuccess: () => {
-          toast.success("Produk berhasil diperbarui");
+          toast.success("Product updated successfully");
           router.push("/products");
         },
         onError: (error: any) => {
-          toast.error(error?.response?.data?.message || "Gagal memperbarui produk");
+          toast.error(error?.response?.data?.message || "Failed to update product");
         },
       }
     );
@@ -103,7 +103,7 @@ export default function EditProductPage() {
   if (isLoadingProduct) {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
-        <p className="text-gray-500">Memuat data produk...</p>
+        <p className="text-gray-500">Loading product data...</p>
       </div>
     );
   }
@@ -111,12 +111,12 @@ export default function EditProductPage() {
   if (isError || !product) {
     return (
       <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center gap-4">
-        <p className="text-gray-500">Produk tidak ditemukan.</p>
+        <p className="text-gray-500">Product not found.</p>
         <button
           onClick={() => router.push("/products")}
           className="border border-gray-700 px-4 py-2 rounded-lg text-sm hover:border-gray-500"
         >
-          Kembali ke Products
+          Back to Products
         </button>
       </div>
     );
@@ -129,7 +129,7 @@ export default function EditProductPage() {
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label className="block text-sm text-gray-400 mb-1.5">Nama Produk</label>
+            <label className="block text-sm text-gray-400 mb-1.5">Product Name</label>
             <input
               type="text"
               value={name}
@@ -151,7 +151,7 @@ export default function EditProductPage() {
               {errors.brand && <p className="text-red-500 text-xs mt-1">{errors.brand}</p>}
             </div>
             <div>
-              <label className="block text-sm text-gray-400 mb-1.5">Tipe</label>
+              <label className="block text-sm text-gray-400 mb-1.5">Type</label>
               <input
                 type="text"
                 value={type}
@@ -163,7 +163,7 @@ export default function EditProductPage() {
           </div>
 
           <div>
-            <label className="block text-sm text-gray-400 mb-1.5">Deskripsi</label>
+            <label className="block text-sm text-gray-400 mb-1.5">Description</label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
@@ -175,7 +175,7 @@ export default function EditProductPage() {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm text-gray-400 mb-1.5">Harga (Rp)</label>
+              <label className="block text-sm text-gray-400 mb-1.5">Price (Rp)</label>
               <input
                 type="number"
                 min={1}
@@ -186,7 +186,7 @@ export default function EditProductPage() {
               {errors.price && <p className="text-red-500 text-xs mt-1">{errors.price}</p>}
             </div>
             <div>
-              <label className="block text-sm text-gray-400 mb-1.5">Stok</label>
+              <label className="block text-sm text-gray-400 mb-1.5">Stock</label>
               <input
                 type="number"
                 min={0}
@@ -200,7 +200,7 @@ export default function EditProductPage() {
 
           <div>
             <label className="block text-sm text-gray-400 mb-1.5">
-              Gambar Produk <span className="text-gray-600">(kosongkan jika tidak ingin ganti)</span>
+              Product Image <span className="text-gray-600">(leave empty to keep current image)</span>
             </label>
             <input
               type="file"
@@ -221,14 +221,14 @@ export default function EditProductPage() {
               disabled={isPending}
               className="bg-white text-black px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-gray-200 transition-colors disabled:opacity-50"
             >
-              {isPending ? "Menyimpan..." : "Simpan Perubahan"}
+              {isPending ? "Saving..." : "Save Changes"}
             </button>
             <button
               type="button"
               onClick={() => router.back()}
               className="border border-gray-700 px-5 py-2.5 rounded-lg text-sm font-semibold hover:border-gray-500 transition-colors"
             >
-              Batal
+              Cancel
             </button>
           </div>
         </form>
