@@ -2,12 +2,20 @@
 import { z } from "zod";
 
 export const authLoginValidation = z.object({
-  email: z.string().email("Please enter a valid email address."),
+  email: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .email("Please enter a valid email address."),
   password: z.string().min(1, "Password is required."),
 });
 
 export const authRegisterValidation = z.object({
-  email: z.string().email("Please enter a valid email address."),
+  email: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .email("Please enter a valid email address."),
   username: z
     .string()
     .min(5, "Username must be at least 5 characters")
@@ -20,6 +28,12 @@ export const authRegisterValidation = z.object({
     .string()
     .min(8, "Password must be at least 8 characters")
     .max(20, "Password must be at most 20 characters"),
+  contact: z
+    .string()
+    .trim()
+    .min(10, "Phone number must be at least 10 digits")
+    .max(20, "Phone number must be at most 20 digits")
+    .regex(/^\d+$/, "Phone number must contain only digits"),
 });
 
 export type AuthLoginType = z.infer<typeof authLoginValidation>;

@@ -203,7 +203,7 @@ export default function RegisterPage() {
             )}
           </div>
 
-          <div style={{ marginBottom: "28px" }}>
+          <div style={{ marginBottom: "18px" }}>
             <label
               htmlFor="password"
               style={{
@@ -239,6 +239,46 @@ export default function RegisterPage() {
                 style={{ color: "#ef4444", fontSize: "12px", marginTop: "6px" }}
               >
                 {errors.password.message}
+              </p>
+            )}
+          </div>
+
+          <div style={{ marginBottom: "28px" }}>
+            <label
+              htmlFor="contact"
+              style={{
+                display: "block",
+                color: "#e2e8f0",
+                marginBottom: "8px",
+                fontSize: "14px",
+                fontWeight: 500,
+              }}
+            >
+              Phone Number
+            </label>
+
+            <input
+              id="contact"
+              type="tel"
+              placeholder="Enter your phone number"
+              {...register("contact")}
+              style={{
+                width: "100%",
+                padding: "15px",
+                borderRadius: "10px",
+                border: "1px solid #475569",
+                background: "#0f172a",
+                color: "#fff",
+                fontSize: "15px",
+                outline: "none",
+                boxSizing: "border-box",
+              }}
+            />
+            {errors.contact && (
+              <p
+                style={{ color: "#ef4444", fontSize: "12px", marginTop: "6px" }}
+              >
+                {errors.contact.message}
               </p>
             )}
           </div>
