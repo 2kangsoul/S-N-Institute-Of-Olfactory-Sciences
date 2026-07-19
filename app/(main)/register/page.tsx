@@ -10,7 +10,7 @@ import {
   AuthRegisterType,
 } from "@/src/Features/Auth/auth.validation";
 import { ApiResponse } from "@/src/types/api-response.type";
-
+import Link from "next/link";
 export default function RegisterPage() {
   const router = useRouter();
   const registerMutation = useRegister();
@@ -313,7 +313,7 @@ export default function RegisterPage() {
           }}
         >
           Already have an account?{" "}
-          <a
+          <Link
             href="/login"
             style={{
               color: "#3b82f6",
@@ -322,7 +322,7 @@ export default function RegisterPage() {
             }}
           >
             Sign In
-          </a>
+          </Link>
         </p>
       </div>
     </div>
