@@ -7,20 +7,17 @@ export const authService = {
       "/auth/register",
       payload,
     );
-    return data.data.safeRegister; // register nested, harus di-unwrap
+    return data.data.safeRegister;
   },
-
   login: async (payload: LoginPayload): Promise<AuthUser> => {
     const { data } = await api.post<
       ApiResponse<{ safeLogin: AuthUser; signToken: string }>
     >("/auth/login", payload);
-    return data.data.safeLogin; // login gak nested, langsung ambil
+    return data.data.safeLogin;
   },
-
   logout: async (): Promise<void> => {
     await api.post("/auth/logout");
   },
-
   me: async (): Promise<AuthUser> => {
     const { data } = await api.get<ApiResponse<AuthUser>>("/auth/me");
     return data.data;
