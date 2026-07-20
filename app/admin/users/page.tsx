@@ -68,6 +68,7 @@ export default function AdminUsersPage() {
                             src={user.profilePic}
                             alt={user.fullName}
                             className="w-full h-full object-cover"
+                            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                           />
                         ) : (
                           user.fullName?.[0]?.toUpperCase() ?? "?"
