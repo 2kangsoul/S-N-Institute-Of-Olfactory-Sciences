@@ -238,7 +238,7 @@ export default function SettingsAccountModal({
       if (profilePic) {
         const formData = new FormData();
         formData.append("file", profilePic);
-        const uploadRes: any = await apiClient.post(`users/upload`, formData, {
+        const uploadRes: any = await apiClient.post(`/users/upload`, formData, {
           headers: { "Content-Type": "multipart/form-data" },
         });
         profilePicUrl =

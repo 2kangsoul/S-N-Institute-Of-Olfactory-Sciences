@@ -259,7 +259,7 @@ export default function AdminSidebarModal({
       if (profilePic) {
         const fd = new FormData();
         fd.append("file", profilePic);
-        const up = await apiClient.post("users/upload", fd, {
+        const up = await apiClient.post("/users/upload", fd, {
           headers: { "Content-Type": "multipart/form-data" },
         });
         profilePicUrl =

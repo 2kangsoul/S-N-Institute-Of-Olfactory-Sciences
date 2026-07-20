@@ -1,16 +1,6 @@
 import { api } from "@/src/lib/axios";
 import { CreateOrderPayload, Order, OrderStatus } from "./order.type";
 
-// export class OrderService {
-//   static async createOrder(payload: CreateOrderPayload) {
-//     const { data } = await api.post<{ data: Order }>(
-//       "/order/create",
-//       payload,
-//     );
-//     return data.data;
-//   }
-// }
-
 export class OrderService {
   static async createOrder(payload: CreateOrderPayload) {
     const response = await api.post<{ data: Order }>("/order/create", payload);
@@ -23,7 +13,9 @@ export class OrderService {
   }
 
   static async updateStatus(id: string, status: OrderStatus) {
-    const response = await api.patch<{ data: Order }>(`/order/update/${id}`, { status });
+    const response = await api.patch<{ data: Order }>(`/order/update/${id}`, {
+      status,
+    });
     return response.data.data;
   }
 
