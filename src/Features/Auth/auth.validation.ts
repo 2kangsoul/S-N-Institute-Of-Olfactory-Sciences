@@ -1,4 +1,3 @@
-// src/Features/Auth/auth.validation.ts
 import { z } from "zod";
 
 export const authLoginValidation = z.object({

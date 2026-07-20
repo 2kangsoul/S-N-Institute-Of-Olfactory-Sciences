@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
 import AromaDetail from "@/src/page/IrisFowerNicho";
 import { aromasData } from "@/src/Features/landingpages/types/aromasData";
-
-// SSG: pre-render satu halaman statis per slug saat build (SEO + super cepat).
 export function generateStaticParams() {
   return aromasData.map((a) => ({ slug: a.slug }));
 }

@@ -10,11 +10,9 @@ import {
   AuthRegisterType,
 } from "@/src/Features/Auth/auth.validation";
 import { ApiResponse } from "@/src/types/api-response.type";
-
 export default function RegisterPage() {
   const router = useRouter();
   const registerMutation = useRegister();
-
   const {
     register,
     handleSubmit,
@@ -22,7 +20,6 @@ export default function RegisterPage() {
   } = useForm<AuthRegisterType>({
     resolver: zodResolver(authRegisterValidation),
   });
-
   const onSubmit = (values: AuthRegisterType) => {
     registerMutation.mutate(values, {
       onSuccess: () => {
@@ -35,7 +32,6 @@ export default function RegisterPage() {
       },
     });
   };
-
   return (
     <div
       style={{
@@ -136,7 +132,6 @@ export default function RegisterPage() {
             >
               Username
             </label>
-
             <input
               id="username"
               type="text"
@@ -162,7 +157,6 @@ export default function RegisterPage() {
               </p>
             )}
           </div>
-
           <div style={{ marginBottom: "18px" }}>
             <label
               htmlFor="email"
@@ -202,7 +196,6 @@ export default function RegisterPage() {
               </p>
             )}
           </div>
-
           <div style={{ marginBottom: "28px" }}>
             <label
               htmlFor="password"
@@ -242,7 +235,6 @@ export default function RegisterPage() {
               </p>
             )}
           </div>
-
           <button
             type="submit"
             disabled={registerMutation.isPending}
@@ -263,7 +255,6 @@ export default function RegisterPage() {
               : "Create Account"}
           </button>
         </form>
-
         <p
           style={{
             marginTop: "24px",

@@ -10,17 +10,12 @@ import {
   AuthLoginType,
 } from "@/src/Features/Auth/auth.validation";
 import { ApiResponse } from "@/src/types/api-response.type";
-// ponytail: sinkronisasi React Query cache → Zustand useAuthStore.
-// AuthLayout/AdminLayout baca isAuthenticated dari Zustand, bukan React Query.
-// Tanpa ini, setelah login berhasil cookie sudah set, tapi Zustand masih
-// isAuthenticated=false → AuthLayout kembali redirect ke /login (race condition).
 import { useAuthStore } from "@/src/stores/useAuthStore";
 
 export default function LoginPage() {
   const router = useRouter();
   const login = useLogin();
   const fetchCurrentUser = useAuthStore((s) => s.fetchCurrentUser);
-
   const {
     register,
     handleSubmit,
@@ -28,15 +23,11 @@ export default function LoginPage() {
   } = useForm<AuthLoginType>({
     resolver: zodResolver(authLoginValidation),
   });
-
   const onSubmit = (values: AuthLoginType) => {
     login.mutate(values, {
       onSuccess: async () => {
         toast.success("Login successful!");
-        // ponytail: tunggu Zustand ter-populate dari /auth/me sebelum push,
-        // supaya AuthLayout gak sempat baca isAuthenticated=false → redirect balik.
         await fetchCurrentUser();
-        // Role-based redirect: ADMIN/SUPER_ADMIN ke dashboard, user biasa ke landing.
         const role = useAuthStore.getState().user?.role;
         const dest = role === "ADMIN" || role === "SUPER_ADMIN" ? "/admin" : "/";
         router.push(dest);

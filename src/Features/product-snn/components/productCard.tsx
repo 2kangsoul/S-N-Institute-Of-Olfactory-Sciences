@@ -1,16 +1,13 @@
 "use client";
-
 import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Product } from "../product.type";
 import { useDeleteProduct } from "../product.query";
 import { useAuthStore } from "@/src/stores/useAuthStore";
-
 type ProductCardProps = {
   product: Product;
 };
-
 export default function ProductCard({ product }: ProductCardProps) {
   const { user } = useAuthStore();
   const isAdmin = user?.role === "ADMIN" || user?.role === "SUPER_ADMIN";
@@ -30,10 +27,8 @@ export default function ProductCard({ product }: ProductCardProps) {
       error: "Gagal menghapus produk",
     });
   };
-
   const isLowStock = product.stock > 0 && product.stock <= 5;
   const isOutOfStock = product.stock === 0;
-
   return (
     <div className="group border border-gray-800 rounded-xl overflow-hidden bg-neutral-950 hover:border-gray-600 transition-all duration-200 flex flex-col">
       <div className="relative aspect-square w-full overflow-hidden bg-gray-900">
