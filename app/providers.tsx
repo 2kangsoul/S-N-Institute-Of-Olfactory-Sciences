@@ -5,7 +5,7 @@ import { MantineProvider } from "@mantine/core";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "@/src/lib/queryClient";
 import { useAuthStore } from "@/src/stores/useAuthStore"; // sesuaikan path
-
+import { AppRouterCacheProvider } from "@mui/material-nextjs/v14-appRouter";
 export default function Providers({ children }: { children: React.ReactNode }) {
   const fetchCurrentUser = useAuthStore((state) => state.fetchCurrentUser);
 
@@ -14,10 +14,12 @@ export default function Providers({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <MantineProvider>
-        {children}
-      </MantineProvider>
-    </QueryClientProvider>
+    <AppRouterCacheProvider>
+      <QueryClientProvider client={queryClient}>
+        <MantineProvider>
+          {children}
+        </MantineProvider>
+      </QueryClientProvider>
+    </AppRouterCacheProvider>
   );
 }
