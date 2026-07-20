@@ -4,8 +4,8 @@ export const getDashboardStats = async () => {
   // Ambil data penjualan terbanyak, total pendapatan, dll.
   // Sesuaikan endpoint dengan nama rute di Express Anda
   const [products, orders] = await Promise.all([
-    apiClient.get("/products?sortBy=soldCount%20DESC&pageSize=5"),
-    apiClient.get("/orders")
+    apiClient.get("/perfumes?sortBy=soldCount%20DESC&pageSize=5"),
+    apiClient.get("/order/get")
   ]);
   
   return {
