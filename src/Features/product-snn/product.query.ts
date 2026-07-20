@@ -8,7 +8,6 @@ export const useGetProducts = (params?: GetProductsParams) => {
     queryFn: () => ProductService.getProducts(params),
   });
 };
-
 export const useGetProductById = (id: string) => {
   return useQuery({
     queryKey: ["product", id],
@@ -16,7 +15,6 @@ export const useGetProductById = (id: string) => {
     enabled: !!id,
   });
 };
-
 export const useCreateProduct = () => {
   const queryClient = useQueryClient();
   return useMutation({
@@ -26,7 +24,6 @@ export const useCreateProduct = () => {
     },
   });
 };
-
 export const useUpdateProduct = () => {
   const queryClient = useQueryClient();
   return useMutation({
@@ -38,7 +35,6 @@ export const useUpdateProduct = () => {
     },
   });
 };
-
 export const useDeleteProduct = () => {
   const queryClient = useQueryClient();
   return useMutation({

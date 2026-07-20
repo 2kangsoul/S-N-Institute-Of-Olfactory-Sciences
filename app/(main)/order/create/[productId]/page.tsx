@@ -1,17 +1,13 @@
 "use client";
-
 import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useCreateOrder } from "@/src/Features/order-snn/order.query";
 import { useGetProductById } from "@/src/Features/product-snn/product.query";
-
 export default function OrderCreatePage() {
   const { productId } = useParams<{ productId: string }>();
   const router = useRouter();
-
   const { data: product, isLoading, isError } = useGetProductById(productId);
   const { mutate: createOrder, isPending, error } = useCreateOrder();
-
   const [quantity, setQuantity] = useState(1);
   const [note, setNote] = useState("");
   const [showToast, setShowToast] = useState(false);
@@ -21,7 +17,6 @@ export default function OrderCreatePage() {
     return <p className="text-white p-8">Produk tidak ditemukan.</p>;
 
   const totalAmount = product.price * quantity;
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (quantity < 1 || quantity > product.stock) return;

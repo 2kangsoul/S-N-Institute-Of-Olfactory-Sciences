@@ -1,9 +1,7 @@
 "use client";
-
 import { useEffect, useState } from "react";
 import { useGetProducts } from "@/src/Features/product-snn/product.query";
 import ProductCard from "@/src/Features/product-snn/components/productCard";
-
 function getPageNumbers(current: number, total: number) {
   const pages: (number | "...")[] = [];
   const range = 1;
@@ -16,7 +14,6 @@ function getPageNumbers(current: number, total: number) {
   }
   return pages;
 }
-
 function ProductCardSkeleton() {
   return (
     <div className="border border-gray-800 rounded-xl overflow-hidden bg-neutral-950 animate-pulse">
