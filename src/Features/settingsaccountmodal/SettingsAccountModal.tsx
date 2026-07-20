@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import ReactCountryFlag from "react-country-flag";
 import apiClient from "../../config/api";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api";
 
 interface SettingsAccountModalProps {
   isOpen: boolean;
@@ -74,7 +75,7 @@ export default function SettingsAccountModal({
   );
 
   useEffect(() => {
-    fetch("http://localhost:8000/api/countries")
+    fetch(`${API_BASE}/countries`)
       .then((res) => res.json())
       .then((res) => {
         const arr = Array.isArray(res.data) ? res.data : [];
@@ -103,7 +104,7 @@ export default function SettingsAccountModal({
 
   useEffect(() => {
     if (isIndonesia) {
-      fetch("http://localhost:8000/api/provinces")
+      fetch(`${API_BASE}/provinces`)
         .then((res) => res.json())
         .then(setProvinces)
         .catch(console.error);
@@ -112,7 +113,7 @@ export default function SettingsAccountModal({
 
   useEffect(() => {
     if (selectedProvince) {
-      fetch(`http://localhost:8000/api/regencies/${selectedProvince}`)
+      fetch(`${API_BASE}/regencies/${selectedProvince}`)
         .then((res) => res.json())
         .then(setRegencies)
         .catch(console.error);
@@ -126,7 +127,7 @@ export default function SettingsAccountModal({
 
   useEffect(() => {
     if (selectedRegency) {
-      fetch(`http://localhost:8000/api/districts/${selectedRegency}`)
+      fetch(`${API_BASE}/districts/${selectedRegency}`)
         .then((res) => res.json())
         .then(setDistricts)
         .catch(console.error);
@@ -138,7 +139,7 @@ export default function SettingsAccountModal({
 
   useEffect(() => {
     if (selectedDistrict) {
-      fetch(`http://localhost:8000/api/villages/${selectedDistrict}`)
+      fetch(`${API_BASE}/villages/${selectedDistrict}`)
         .then((res) => res.json())
         .then(setVillages)
         .catch(console.error);

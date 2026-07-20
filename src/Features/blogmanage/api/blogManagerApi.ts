@@ -25,17 +25,6 @@ export const updateBlogApi = async (id: string, payload: any) => {
 };
 
 export const generateBlogAIApi = async (payload: any) => {
-  const response = await fetch("/api/generate-blog", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-
-  const data = await response.json();
-
-  if (!response.ok) {
-    throw new Error(data.message || "Gagal menghubungi AI");
-  }
-
-  return data;
+  const response = await apiClient.post("/blogs/generate", payload);
+  return response.data;
 };

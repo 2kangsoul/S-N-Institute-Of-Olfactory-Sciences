@@ -1,10 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { useGetProducts } from "@/src/Features/product-snn/product.query";
 import ProductCard from "@/src/Features/product-snn/components/productCard";
-import { useAuthStore } from "@/src/stores/useAuthStore";
 
 function getPageNumbers(current: number, total: number) {
   const pages: (number | "...")[] = [];
@@ -38,9 +36,6 @@ export default function ProductsPage() {
   const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
 
-  const { user } = useAuthStore();
-  const isAdmin = user?.role === "ADMIN" || user?.role === "SUPER_ADMIN";
-
   useEffect(() => {
     const timeout = setTimeout(() => {
       setSearch(searchInput);
@@ -71,14 +66,6 @@ export default function ProductsPage() {
               </p>
             )}
           </div>
-          {isAdmin && (
-            <Link
-              href="/admin/products/create"
-              className="bg-white text-black px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-200 transition-colors"
-            >
-              + Create Product
-            </Link>
-          )}
         </div>
 
         <div className="relative mb-8 max-w-sm">

@@ -10,33 +10,49 @@ interface DesktopActionsProps extends UseMainLayoutReturn {
 }
 
 export default function DesktopActions(props: DesktopActionsProps) {
-  const { isAuthenticated, user, logout } = props;
+  const { isAuthenticated, user, logout, setIsAccountModalOpen, setIsBlogModalOpen } = props;
 
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   return (
     <div className="hidden lg:flex items-center gap-3 text-xs font-medium">
       {isAuthenticated ? (
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setIsBlogModalOpen?.(true)}
+            className="px-3 py-1 border border-white/20 text-white text-xs rounded-md hover:bg-white/10 transition-colors"
+          >
+            Tulis Blog
+          </button>
         <div className="relative">
           <button
             onClick={() => setIsProfileOpen((prev) => !prev)}
             className="flex items-center gap-2 pl-1.5 pr-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/10 transition-colors"
           >
-            <div className="w-7 h-7 rounded-full bg-gray-300 flex items-center justify-center flex-shrink-0">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-4 w-4 text-gray-600"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+            <div className="w-7 h-7 rounded-full bg-gray-300 flex items-center justify-center flex-shrink-0 overflow-hidden">
+              {user?.profilePic ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={user.profilePic}
+                  alt={user?.fullName || "avatar"}
+                  className="w-full h-full object-cover"
                 />
-              </svg>
+              ) : (
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-4 w-4 text-gray-600"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                  />
+                </svg>
+              )}
             </div>
             <span className="text-sm font-medium text-gray-100">
               {user?.fullName}
@@ -59,6 +75,16 @@ export default function DesktopActions(props: DesktopActionsProps) {
               <button
                 onClick={() => {
                   setIsProfileOpen(false);
+                  setIsAccountModalOpen?.(true);
+                }}
+                className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 font-medium transition-colors"
+              >
+                Account Settings
+              </button>
+
+              <button
+                onClick={() => {
+                  setIsProfileOpen(false);
                   logout();
                 }}
                 className="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-red-50 font-medium transition-colors"
@@ -67,6 +93,7 @@ export default function DesktopActions(props: DesktopActionsProps) {
               </button>
             </div>
           )}
+        </div>
         </div>
       ) : (
         <>

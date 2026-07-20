@@ -10,7 +10,7 @@ interface ExtendedMobileMenuProps extends MobileMenuProps {
 }
 
 export default function MobileMenu(props: ExtendedMobileMenuProps) {
-  const { isMobileMenuOpen, isAuthenticated, user, toggleMenu, closeMenu, handleLogout } =
+  const { isMobileMenuOpen, isAuthenticated, user, toggleMenu, closeMenu, handleManageBlog, handleLogout } =
     useMobileMenu(props);
 
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -94,6 +94,15 @@ export default function MobileMenu(props: ExtendedMobileMenuProps) {
           </Link>
 
           <div className="w-full border-t border-gray-300 my-2"></div>
+
+          {isAuthenticated && (
+            <button
+              onClick={handleManageBlog}
+              className="w-full text-left text-gray-800 font-medium hover:text-gray-500 transition-colors"
+            >
+              Tulis Blog
+            </button>
+          )}
 
           {!isAuthenticated && (
             <div className="flex flex-col gap-3">

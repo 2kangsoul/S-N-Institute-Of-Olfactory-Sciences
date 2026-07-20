@@ -3,9 +3,12 @@ import apiClient from "../config/api";
 
 interface UserData {
   fullname?: string;
+  fullName?: string;
+  username?: string;
   name?: string;
   email?: string;
   address?: string;
+  country?: string;
   no_handphone?: string;
   objectId: string;
   id?: string;
@@ -63,11 +66,16 @@ export const useAuthStore = create<AuthState>()((set) => ({
       set({
         isAuthenticated: true,
         user: {
+          fullname: data.fullName,
+          fullName: data.fullName,
           name: data.fullName,
+          username: data.username,
           email: data.email,
           address: data.address,
+          country: data.country,
           no_handphone: data.no_handphone,
           objectId: data.id,
+          id: data.id,
           role: data.role || "user",
           profilePic: data.profilePic,
         },

@@ -1,5 +1,13 @@
 // import Groq from "groq-sdk";
 
+// ponytail: chatbot route di-comment mati di remote (bukan fix, cuma disable).
+// Next.js butuh export supaya file valid module; kembalikan 501 sampai dibenerin.
+export const POST = () =>
+  new Response(JSON.stringify({ message: "Chatbot sedang dinonaktifkan" }), {
+    status: 501,
+    headers: { "Content-Type": "application/json" },
+  });
+
 // export const runtime = "edge";
 
 // export async function POST(req: Request) {

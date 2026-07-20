@@ -1,6 +1,7 @@
 export interface BlogManagerModalProps {
   isOpen: boolean;
   onClose: () => void;
+  asPage?: boolean;
 }
 
 export interface BlogFormData {

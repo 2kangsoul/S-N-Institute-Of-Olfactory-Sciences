@@ -16,93 +16,48 @@ const safeGet = async (url: string, timeoutMs = 15000) => {
 };
 
 function extractFullName(payload: any) {
-  return (
-    payload?.data?.fullName?.trim() ||
-    payload?.data?.data?.fullName?.trim() ||
-    "User"
-  );
+  return payload?.data?.fullName?.trim() || payload?.data?.data?.fullName?.trim() || "User";
 }
 
 export async function fetchDashboardData(): Promise<DashboardData> {
   let pageviewsData = { total: 0, trend: "0%", isPositive: true };
-  let subscriptionsData = { total: 0, trend: "0%", isPositive: true };
-  let financialsData = {
-    totalRevenue: 0,
-    totalProfit: 0,
-    profitTrend: "0%",
-    isProfitPositive: true,
-  };
+  let financialsData = { totalRevenue: 0, totalProfit: 0, profitTrend: "0%", isProfitPositive: true };
   let recentOrders: any[] = [];
   let monthlyUsersData = { total: 0, trend: "0%", isPositive: true };
   let newSignUpsData = { total: 0, trend: "0%", isPositive: true };
   let chartData: any[] = [];
-  let sessionsData = { total: 0, trend: "0%", isPositive: true, chartData: [] };
   let fullName = "User";
+  let monthlyUsersOverview = { totalUsers: 0, byCountry: [], lastUpdated: "" };
+  let monthlyUsersSummary = { totalUsers: 0, newUsersThisMonth: 0, newUsersLastMonth: 0, growthPercentage: 0, activeUsers: 0 };
 
-  let monthlyUsersOverview = {
-    totalUsers: 0,
-    byDevice: [],
-    byCountry: [],
-    lastUpdated: "",
-  };
-  let monthlyUsersSummary = {
-    totalUsers: 0,
-    newUsersThisMonth: 0,
-    newUsersLastMonth: 0,
-    growthPercentage: 0,
-    activeUsers: 0,
-  };
-
-  // Dipecah jadi 2 gelombang (bukan 10 request sekaligus) supaya tidak membanjiri
-  // connection pool database (apalagi di tier kecil seperti Supabase Nano).
-  // Beberapa endpoint di sini (mis. /monthly-users/realtime) juga menjalankan
-  // 2-3 query internal secara paralel, jadi total tekanan ke DB tetap besar
-  // walau di sisi frontend cuma kelihatan beberapa request.
-  const [
-    pageviewsRes,
-    subscriptionsRes,
-    financialsRes,
-    monthlyUsersRes,
-    signUpsRes,
-  ] = await Promise.all([
+  const [pageviewsRes, financialsRes, monthlyUsersRes, signUpsRes] = await Promise.all([
     safeGet("/analytics/pageviews"),
-    safeGet("/subscriptions/data"),
     safeGet("/orders/financials"),
     safeGet("/users/monthly"),
     safeGet("/signups/data"),
   ]);
 
-  const [
-    chartRes,
-    sessionsRes,
-    monthlyOverviewRes,
-    monthlySummaryRes,
-    userProfileRes,
-  ] = await Promise.all([
-    safeGet("/expenses/chart"),
-    safeGet("/analytics/sessions"),
+  const [monthlyOverviewRes, monthlySummaryRes, userProfileRes, chartRes] = await Promise.all([
     safeGet("/monthly-users/realtime"),
     safeGet("/monthly-users/summary"),
     safeGet("/auth/me"),
+    safeGet("/orders/monthly-revenue"),
   ]);
 
   pageviewsData = pageviewsRes.data?.data || pageviewsData;
-  subscriptionsData = subscriptionsRes.data?.data || subscriptionsData;
   financialsData = financialsRes.data?.data || financialsData;
   monthlyUsersData = monthlyUsersRes.data?.data || monthlyUsersData;
   newSignUpsData = signUpsRes.data?.data || newSignUpsData;
-  chartData = chartRes.data?.data || chartData;
-  sessionsData = sessionsRes.data?.data || sessionsData;
   monthlyUsersOverview = monthlyOverviewRes.data?.data || monthlyUsersOverview;
   monthlyUsersSummary = monthlySummaryRes.data?.data || monthlyUsersSummary;
   fullName = extractFullName(userProfileRes.data);
+  chartData = chartRes.data?.data || chartData;
 
   const recentOrdersRes = await safeGet("/orders/recent");
   recentOrders = recentOrdersRes.data?.data || [];
 
   return {
     pageviews: pageviewsData,
-    subscriptions: subscriptionsData,
     totalRevenue: financialsData.totalRevenue,
     totalProfit: financialsData.totalProfit,
     profitTrend: financialsData.profitTrend,
@@ -111,7 +66,6 @@ export async function fetchDashboardData(): Promise<DashboardData> {
     monthlyUsers: monthlyUsersData,
     newSignUps: newSignUpsData,
     chartData,
-    sessions: sessionsData,
     fullName,
     monthlyUsersOverview,
     monthlyUsersSummary,

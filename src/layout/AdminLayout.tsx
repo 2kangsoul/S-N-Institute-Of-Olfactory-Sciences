@@ -7,11 +7,9 @@ import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard,
   BookOpen,
-  BarChart2,
-  Package,
   Sparkles,
+  Award,
   Users,
-  DollarSign,
   ClipboardList,
   Settings,
   Home,
@@ -59,15 +57,22 @@ const NavItem = ({ icon: Icon, label, active = false, onClick }: any) => (
 );
  
 const AdminLayout = ({ children }: AdminLayoutProps) => {
-  const { isAuthenticated, isAuthLoading, user } = useAuthStore();
+  const { isAuthenticated, isAuthLoading, user, fetchCurrentUser } = useAuthStore();
   const [showModal, setShowModal] = useState(false);
   const [showSidebar, setShowSidebar] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
- 
+
   // Hindari mismatch SSR: evaluasi auth setelah mount
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
+
+  // ponytail: verify session setiap mount, sama pola AuthLayout.
+  // Tanpa ini, hard navigate / refresh /admin → Zustand reset ke default → denied=true → redirect /.
+  useEffect(() => {
+    fetchCurrentUser();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname]);
  
   // FIX: role di backend (Prisma enum) itu UPPERCASE -> "ADMIN" | "SUPER_ADMIN" | "USER"
   // Sebelumnya di sini dicek lowercase ("admin"/"owner") sehingga admin asli selalu
@@ -120,16 +125,14 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
  
   const mainNav = [
     { icon: LayoutDashboard, label: "Dashboard", path: "/admin" },
-    { icon: BookOpen, label: "Program", path: "/program" },
-    { icon: BarChart2, label: "Laporan", path: "/admin/laporan" },
-    { icon: Package, label: "Produk", path: "/products" },
+    { icon: ClipboardList, label: "Orders", path: "/admin/order" },
   ];
- 
+
   const otherNav = [
-    { icon: Sparkles, label: "Perfume", path: "/awards" },
-    { icon: Users, label: "Users", path: "/admin" },
-    { icon: DollarSign, label: "Expenses", path: "/admin" },
-    { icon: ClipboardList, label: "Orders", path: "/admin" },
+    { icon: Sparkles, label: "Perfume", path: "/admin/perfumes" },
+    { icon: Award, label: "Awards", path: "/admin/awards" },
+    { icon: Users, label: "Users", path: "/admin/users" },
+    { icon: BookOpen, label: "Blog", path: "/admin/blog" },
   ];
  
   const isActive = (path: string) => pathname === path;

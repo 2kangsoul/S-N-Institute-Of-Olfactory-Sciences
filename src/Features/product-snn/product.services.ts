@@ -37,7 +37,7 @@ export class ProductService {
 
   static async deleteProduct(id: string) {
     const { data } = await api.delete<{ message: string; data: Product }>(
-      `/products/delete/${id}`
+      `/product/delete/${id}`
     );
     return data.data;
   }

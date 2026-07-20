@@ -6,8 +6,7 @@ import { Toaster } from "sonner";
 import { ColorSchemeScript, mantineHtmlProps } from "@mantine/core";
 import Providers from "./providers";
 import { ToastContainer } from "react-toastify";
-import { QueryClientProvider } from "@tanstack/react-query";
-import { queryClient } from "@/src/lib/queryClient";
+
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.SITE_URL || "http://localhost:3000"),
@@ -31,7 +30,8 @@ export const metadata: Metadata = {
     type: "website",
   },
   icons: {
-    icon: "/favicon.svg",
+    icon: "/favicon.ico",
+    apple: "/apple-touch-icon.png",
   },
 };
 

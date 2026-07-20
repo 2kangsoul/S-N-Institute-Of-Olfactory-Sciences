@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useAuthStore } from "../../../stores/useAuthStore";
 import apiClient from "../../../config/api";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api";
 
 type Tab = "account" | "add-admin" | "make-admin";
 
@@ -147,7 +148,7 @@ export default function AdminSidebarModal({
   // ── Fetch countries ───────────────────────────────────────────────────────
   useEffect(() => {
     if (!isOpen) return;
-    fetch("http://localhost:8000/api/countries")
+    fetch(`${API_BASE}/countries`)
       .then((r) => r.json())
       .then((res) => {
         const arr = Array.isArray(res.data) ? res.data : [];
@@ -166,7 +167,7 @@ export default function AdminSidebarModal({
   // ── Fetch provinces when Indonesia selected ───────────────────────────────
   useEffect(() => {
     if (!isIndonesia) return;
-    fetch("http://localhost:8000/api/provinces")
+    fetch(`${API_BASE}/provinces`)
       .then((r) => r.json())
       .then(setProvinces)
       .catch(console.error);
@@ -174,7 +175,7 @@ export default function AdminSidebarModal({
 
   useEffect(() => {
     if (!selectedProvince) return;
-    fetch(`http://localhost:8000/api/regencies/${selectedProvince}`)
+    fetch(`${API_BASE}/regencies/${selectedProvince}`)
       .then((r) => r.json())
       .then(setRegencies)
       .catch(console.error);
@@ -187,7 +188,7 @@ export default function AdminSidebarModal({
 
   useEffect(() => {
     if (!selectedRegency) return;
-    fetch(`http://localhost:8000/api/districts/${selectedRegency}`)
+    fetch(`${API_BASE}/districts/${selectedRegency}`)
       .then((r) => r.json())
       .then(setDistricts)
       .catch(console.error);
@@ -198,7 +199,7 @@ export default function AdminSidebarModal({
 
   useEffect(() => {
     if (!selectedDistrict) return;
-    fetch(`http://localhost:8000/api/villages/${selectedDistrict}`)
+    fetch(`${API_BASE}/villages/${selectedDistrict}`)
       .then((r) => r.json())
       .then(setVillages)
       .catch(console.error);

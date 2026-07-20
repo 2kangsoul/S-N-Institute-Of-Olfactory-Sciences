@@ -4,10 +4,6 @@ export interface MetricData {
   isPositive: boolean;
 }
 
-export interface SessionsData extends MetricData {
-  chartData?: Array<{ month: string; sessions: number }>;
-}
-
 export interface FinancialsData {
   totalRevenue: number;
   totalProfit: number;
@@ -22,13 +18,6 @@ export interface Order {
   totalAmount: number;
 }
 
-export interface DeviceData {
-  deviceType?: string;
-  device?: string;
-  count?: number;
-  _count?: { device: number };
-}
-
 export interface CountryData {
   country?: string;
   name?: string;
@@ -39,7 +28,6 @@ export interface CountryData {
 
 export interface MonthlyUsersOverview {
   totalUsers: number;
-  byDevice: Array<{ deviceType: string; count: number }>;
   byCountry: Array<{ country: string; count: number; percentage: number }>;
   lastUpdated: string;
 }
@@ -55,12 +43,10 @@ export interface MonthlyUsersSummary {
 export interface ChartDataPoint {
   month: string;
   revenue: number;
-  expenses: number;
 }
 
 export interface DashboardData {
   pageviews: MetricData;
-  subscriptions: MetricData;
   totalRevenue: number;
   totalProfit: number;
   profitTrend: string;
@@ -69,11 +55,9 @@ export interface DashboardData {
   monthlyUsers: MetricData;
   newSignUps: MetricData;
   chartData: ChartDataPoint[];
-  sessions: SessionsData;
   fullName: string;
   monthlyUsersOverview: MonthlyUsersOverview;
   monthlyUsersSummary: MonthlyUsersSummary;
-  deviceData?: DeviceData[];
   countryData?: CountryData[];
 }
 
@@ -105,7 +89,5 @@ export interface CreateOrderForm {
 export interface AnalyticsModalProps {
   onClose: () => void;
   data: Partial<DashboardData>;
-  deviceChartData: Array<{ name: string; value: number }>;
-  totalDeviceUsers: number;
   countryData: Array<{ name: string; count: number; percentage: number | null }>;
 }

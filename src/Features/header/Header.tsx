@@ -9,25 +9,21 @@ import DesktopActions from "./DesktopActions";
 import MobileMenu from "../../Features/header/component/MobileMenu";
 import SettingsAccountModal from "../../Features/settingsaccountmodal/SettingsAccountModal";
 
-import { useMe, useLogout } from "@/src/Features/Auth/auth.query";
-
 interface HeaderProps extends UseMainLayoutReturn {
   setIsRegisterModalOpen?: (val: boolean) => void;
   setIsAccountModalOpen?: (val: boolean) => void;
   isAccountModalOpen?: boolean;
 }
 
+// ponytail: Header dulu baca auth dari useMe() (React Query) dan MENIMPA props
+// dari useMainLayout (Zustand) — dua sumber kebenaran yang gak pernah sinkron,
+// jadi login via Zustand gak ke-reflect di navbar. Sekarang cuma pakai Zustand
+// (isAuthenticated/user/logout) yang sudah mengalir lewat props, sama seperti
+// 14 tempat lain di app. Satu sumber kebenaran.
 export default function Header(props: HeaderProps) {
   const { isScrolled } = props;
 
   const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
-
-  const { data: user, isLoading } = useMe();
-  const logoutMutation = useLogout();
-
-  const handleLogout = async () => {
-    await logoutMutation.mutateAsync();
-  };
 
   return (
     <>
@@ -50,25 +46,17 @@ export default function Header(props: HeaderProps) {
 
         <DesktopActions
           {...props}
-          user={user}
-          isAuthenticated={!!user}
-          logout={handleLogout}
           setIsAccountModalOpen={setIsAccountModalOpen}
         />
 
-        <MobileMenu
-          {...props}
-          user={user}
-          isAuthenticated={!!user}
-          logout={handleLogout}
-        />
+        <MobileMenu {...props} />
       </header>
 
       {isAccountModalOpen && (
         <SettingsAccountModal
           isOpen={isAccountModalOpen}
           onClose={() => setIsAccountModalOpen(false)}
-          user={user}
+          user={props.user}
         />
       )}
     </>

@@ -19,7 +19,6 @@ import {
 import {
   TrendingUp,
   TrendingDown,
-  Download,
   Plus,
   ArrowRight,
   X,
@@ -33,7 +32,7 @@ import type {
   StatusBadgeProps,
 } from "./DashboardAdminType";
 
-const DEVICE_COLORS = ["#7c3aed", "#06b6d4", "#8b5cf6"];
+const COUNTRY_COLOR = "#7c3aed";
 
 const MONTH_NAMES = [
   "Jan",
@@ -51,8 +50,9 @@ const MONTH_NAMES = [
 ];
 
 function formatCurrency(val: number) {
-  if (val >= 1000) return `$${(val / 1000).toFixed(1)}K`;
-  return `$${val.toFixed(2)}`;
+  if (val >= 1000000) return `Rp ${(val / 1000000).toFixed(1)}Jt`;
+  if (val >= 1000) return `Rp ${(val / 1000).toFixed(1)}K`;
+  return `Rp ${val.toLocaleString("id-ID")}`;
 }
 
 function formatNumber(val: number) {
@@ -125,8 +125,6 @@ const StatusBadge = ({ status }: StatusBadgeProps) => {
 const AnalyticsModal = ({
   onClose,
   data,
-  deviceChartData,
-  totalDeviceUsers,
   countryData,
 }: AnalyticsModalProps) => {
   return (
@@ -185,9 +183,8 @@ const AnalyticsModal = ({
           }}
         >
           {[
-            { label: "Total Sessions", value: data?.sessions?.total ?? 0 },
             { label: "Total Pageviews", value: data?.pageviews?.total ?? 0 },
-            { label: "Total Users", value: totalDeviceUsers },
+            { label: "Total Users", value: data?.monthlyUsersOverview?.totalUsers ?? 0 },
           ].map((card, i) => (
             <div
               key={i}
@@ -214,68 +211,7 @@ const AnalyticsModal = ({
           ))}
         </div>
 
-        <div
-          style={{
-            background: "#0f1117",
-            borderRadius: "8px",
-            padding: "12px",
-            border: "0.5px solid #1e2744",
-            marginBottom: "16px",
-          }}
-        >
-          <div
-            style={{ fontSize: "12px", color: "#94a3b8", marginBottom: "10px" }}
-          >
-            Sessions — Last 12 months
-          </div>
-          <ResponsiveContainer width="100%" height={150}>
-            <AreaChart
-              data={
-                data?.sessions?.chartData?.length ? data.sessions.chartData : []
-              }
-            >
-              <CartesianGrid
-                strokeDasharray="3 3"
-                stroke="rgba(255,255,255,0.04)"
-                vertical={false}
-              />
-              <XAxis
-                dataKey="month"
-                stroke="#4b5563"
-                tick={{ fontSize: 10, fill: "#4b5563" }}
-              />
-              <YAxis
-                stroke="#4b5563"
-                tick={{ fontSize: 10, fill: "#4b5563" }}
-              />
-              <Tooltip
-                contentStyle={{
-                  background: "#1e2744",
-                  border: "none",
-                  borderRadius: "6px",
-                  color: "#fff",
-                  fontSize: "11px",
-                }}
-              />
-              <Area
-                type="monotone"
-                dataKey="sessions"
-                stroke="#7c3aed"
-                fill="rgba(124,58,237,0.12)"
-                strokeWidth={1.5}
-                dot={false}
-              />
-            </AreaChart>
-          </ResponsiveContainer>
-        </div>
-
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: "12px",
-          }}
-        >
+        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
           <div
             style={{
               background: "#0f1117",
@@ -284,151 +220,24 @@ const AnalyticsModal = ({
               border: "0.5px solid #1e2744",
             }}
           >
-            <div
-              style={{
-                fontSize: "12px",
-                color: "#94a3b8",
-                marginBottom: "10px",
-              }}
-            >
-              Users by device
-            </div>
-            <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
-              <PieChart width={90} height={90}>
-                <Pie
-                  data={deviceChartData}
-                  cx={40}
-                  cy={40}
-                  innerRadius={28}
-                  outerRadius={40}
-                  dataKey="value"
-                  strokeWidth={0}
-                >
-                  {deviceChartData.map((_, i) => (
-                    <Cell
-                      key={i}
-                      fill={DEVICE_COLORS[i % DEVICE_COLORS.length]}
-                    />
-                  ))}
-                </Pie>
-              </PieChart>
-              <div style={{ flex: 1 }}>
-                {deviceChartData.map((d, i) => (
-                  <div key={i} style={{ marginBottom: "8px" }}>
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        marginBottom: "3px",
-                      }}
-                    >
-                      <span
-                        style={{
-                          fontSize: "11px",
-                          color: "#94a3b8",
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "4px",
-                        }}
-                      >
-                        <span
-                          style={{
-                            width: "6px",
-                            height: "6px",
-                            borderRadius: "2px",
-                            background: DEVICE_COLORS[i],
-                            display: "inline-block",
-                          }}
-                        />
-                        {d.name}
-                      </span>
-                      <span style={{ fontSize: "11px", color: "#fff" }}>
-                        {d.value.toLocaleString()}
-                      </span>
-                    </div>
-                    <div
-                      style={{
-                        height: "3px",
-                        background: "#1e2744",
-                        borderRadius: "2px",
-                        overflow: "hidden",
-                      }}
-                    >
-                      <div
-                        style={{
-                          height: "100%",
-                          borderRadius: "2px",
-                          background: DEVICE_COLORS[i],
-                          width: `${Math.round((d.value / totalDeviceUsers) * 100)}%`,
-                        }}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <div
-            style={{
-              background: "#0f1117",
-              borderRadius: "8px",
-              padding: "12px",
-              border: "0.5px solid #1e2744",
-            }}
-          >
-            <div
-              style={{
-                fontSize: "12px",
-                color: "#94a3b8",
-                marginBottom: "10px",
-              }}
-            >
+            <div style={{ fontSize: "12px", color: "#94a3b8", marginBottom: "10px" }}>
               Users by country
             </div>
-            <div
-              style={{ display: "flex", flexDirection: "column", gap: "8px" }}
-            >
+            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
               {countryData.map((c, i) => {
                 const total = countryData.reduce((s, x) => s + x.count, 0);
                 const pct =
                   c.percentage !== null && c.percentage !== undefined
                     ? Math.round(c.percentage)
-                    : total > 0
-                      ? Math.round((c.count / total) * 100)
-                      : 0;
+                    : total > 0 ? Math.round((c.count / total) * 100) : 0;
                 return (
                   <div key={i}>
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        marginBottom: "3px",
-                      }}
-                    >
-                      <span style={{ fontSize: "11px", color: "#94a3b8" }}>
-                        {c.name}
-                      </span>
-                      <span style={{ fontSize: "11px", color: "#64748b" }}>
-                        {pct}%
-                      </span>
+                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "3px" }}>
+                      <span style={{ fontSize: "11px", color: "#94a3b8" }}>{c.name}</span>
+                      <span style={{ fontSize: "11px", color: "#64748b" }}>{pct}%</span>
                     </div>
-                    <div
-                      style={{
-                        height: "3px",
-                        background: "#1e2744",
-                        borderRadius: "2px",
-                        overflow: "hidden",
-                      }}
-                    >
-                      <div
-                        style={{
-                          height: "100%",
-                          borderRadius: "2px",
-                          background: "#7c3aed",
-                          width: `${pct}%`,
-                        }}
-                      />
+                    <div style={{ height: "3px", background: "#1e2744", borderRadius: "2px", overflow: "hidden" }}>
+                      <div style={{ height: "100%", borderRadius: "2px", background: COUNTRY_COLOR, width: `${pct}%` }} />
                     </div>
                   </div>
                 );
@@ -449,10 +258,8 @@ export default function DashboardAdminComponent() {
     setShowAnalytics,
     loadData,
     revenueChartData,
-    sessionChartData,
-    deviceChartData,
-    totalDeviceUsers,
     countryData,
+    totalUsers,
     growthValue,
     isGrowthPositive,
   } = useDashboard();
@@ -503,8 +310,6 @@ export default function DashboardAdminComponent() {
         <AnalyticsModal
           onClose={() => setShowAnalytics(false)}
           data={data}
-          deviceChartData={deviceChartData}
-          totalDeviceUsers={totalDeviceUsers}
           countryData={countryData}
         />
       )}
@@ -526,23 +331,6 @@ export default function DashboardAdminComponent() {
           </p>
         </div>
         <div style={{ display: "flex", gap: "8px" }}>
-          <button
-            style={{
-              padding: "6px 14px",
-              borderRadius: "6px",
-              fontSize: "12px",
-              fontWeight: 500,
-              cursor: "pointer",
-              background: "transparent",
-              border: "0.5px solid #2d3748",
-              color: "#94a3b8",
-              display: "flex",
-              alignItems: "center",
-              gap: "6px",
-            }}
-          >
-            <Download size={12} /> Export data
-          </button>
           {/* ── Tombol Manage ── */}
           <button
             onClick={() => setShowManage(true)}
@@ -591,19 +379,13 @@ export default function DashboardAdminComponent() {
           trend={data?.newSignUps?.trend ?? "0%"}
           positive={data?.newSignUps?.isPositive ?? true}
         />
-        <MetricCard
-          label="Subscriptions"
-          value={formatNumber(data?.subscriptions?.total ?? 0)}
-          trend={data?.subscriptions?.trend ?? "0%"}
-          positive={data?.subscriptions?.isPositive ?? true}
-        />
       </div>
 
       {/* Charts Row */}
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "1fr 320px",
+          gridTemplateColumns: "1fr",
           gap: "12px",
         }}
       >
@@ -701,26 +483,6 @@ export default function DashboardAdminComponent() {
               />{" "}
               Revenue
             </div>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "5px",
-                fontSize: "11px",
-                color: "#64748b",
-              }}
-            >
-              <span
-                style={{
-                  width: "8px",
-                  height: "8px",
-                  borderRadius: "2px",
-                  border: "1px dashed #06b6d4",
-                  display: "inline-block",
-                }}
-              />{" "}
-              Expenses
-            </div>
           </div>
           <ResponsiveContainer width="100%" height={180}>
             <LineChart data={revenueChartData}>
@@ -737,7 +499,7 @@ export default function DashboardAdminComponent() {
               <YAxis
                 stroke="#4b5563"
                 tick={{ fontSize: 10, fill: "#4b5563" }}
-                tickFormatter={(v) => `$${v}K`}
+                tickFormatter={(v) => `Rp ${v}K`}
               />
               <Tooltip
                 contentStyle={{
@@ -747,7 +509,7 @@ export default function DashboardAdminComponent() {
                   color: "#fff",
                   fontSize: "11px",
                 }}
-                formatter={(v) => [`$${v}K`]}
+                formatter={(v) => [`Rp ${v}K`]}
               />
               <Line
                 type="monotone"
@@ -757,123 +519,10 @@ export default function DashboardAdminComponent() {
                 dot={{ r: 3, fill: "#7c3aed" }}
                 activeDot={{ r: 5 }}
               />
-              <Line
-                type="monotone"
-                dataKey="expenses"
-                stroke="#06b6d4"
-                strokeWidth={1.5}
-                strokeDasharray="4 3"
-                dot={{ r: 2, fill: "#06b6d4" }}
-              />
             </LineChart>
           </ResponsiveContainer>
         </div>
 
-        {/* Sessions Chart */}
-        <div
-          style={{
-            background: "#161b2e",
-            borderRadius: "10px",
-            padding: "16px",
-            border: "0.5px solid #1e2744",
-          }}
-        >
-          <div style={{ marginBottom: "8px" }}>
-            <div style={{ fontSize: "13px", fontWeight: 500, color: "#fff" }}>
-              Total sessions
-            </div>
-            <div
-              style={{
-                fontSize: "20px",
-                fontWeight: 500,
-                color: "#fff",
-                marginTop: "4px",
-                display: "flex",
-                alignItems: "center",
-                gap: "8px",
-              }}
-            >
-              {formatNumber(data?.sessions?.total ?? 0)}
-              <span
-                style={{
-                  fontSize: "10px",
-                  padding: "2px 6px",
-                  borderRadius: "4px",
-                  background:
-                    (data?.sessions?.isPositive ?? true)
-                      ? "rgba(16,185,129,0.15)"
-                      : "rgba(239,68,68,0.15)",
-                  color:
-                    (data?.sessions?.isPositive ?? true)
-                      ? "#10b981"
-                      : "#ef4444",
-                }}
-              >
-                {(data?.sessions?.isPositive ?? true) ? "↑" : "↓"}{" "}
-                {data?.sessions?.trend ?? "0%"}
-              </span>
-            </div>
-          </div>
-          <ResponsiveContainer width="100%" height={80}>
-            <AreaChart
-              data={
-                data?.sessions?.chartData?.length
-                  ? data.sessions.chartData
-                  : sessionChartData
-              }
-            >
-              <Area
-                type="monotone"
-                dataKey="sessions"
-                stroke="#7c3aed"
-                fill="rgba(124,58,237,0.12)"
-                strokeWidth={1.5}
-                dot={false}
-              />
-              <XAxis dataKey="month" hide />
-              <YAxis hide />
-              <Tooltip
-                contentStyle={{
-                  background: "#1e2744",
-                  border: "none",
-                  borderRadius: "6px",
-                  color: "#fff",
-                  fontSize: "11px",
-                }}
-              />
-            </AreaChart>
-          </ResponsiveContainer>
-          <div
-            style={{
-              marginTop: "10px",
-              borderTop: "0.5px solid #1e2744",
-              paddingTop: "10px",
-            }}
-          >
-            <div
-              style={{
-                fontSize: "11px",
-                color: "#64748b",
-                marginBottom: "8px",
-              }}
-            >
-              Last 12 months
-            </div>
-            <div
-              onClick={() => setShowAnalytics(true)}
-              style={{
-                fontSize: "12px",
-                color: "#a78bfa",
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                gap: "4px",
-              }}
-            >
-              View report <ArrowRight size={12} />
-            </div>
-          </div>
-        </div>
       </div>
 
       {/* Bottom Row */}
@@ -1013,10 +662,10 @@ export default function DashboardAdminComponent() {
                       color: "#94a3b8",
                     }}
                   >
-                    ${" "}
-                    {Number(order.totalAmount).toLocaleString("en-US", {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
+                    Rp{" "}
+                    {Number(order.totalAmount).toLocaleString("id-ID", {
+                      minimumFractionDigits: 0,
+                      maximumFractionDigits: 0,
                     })}
                   </td>
                 </tr>
@@ -1044,119 +693,10 @@ export default function DashboardAdminComponent() {
           >
             Reports overview
           </div>
-          <div
-            style={{
-              display: "flex",
-              gap: "16px",
-              alignItems: "center",
-              marginBottom: "16px",
-            }}
-          >
-            <div
-              style={{
-                position: "relative",
-                width: "110px",
-                height: "110px",
-                flexShrink: 0,
-              }}
-            >
-              <PieChart width={110} height={110}>
-                <Pie
-                  data={deviceChartData}
-                  cx={50}
-                  cy={50}
-                  innerRadius={35}
-                  outerRadius={50}
-                  dataKey="value"
-                  strokeWidth={0}
-                >
-                  {deviceChartData.map((_, i) => (
-                    <Cell
-                      key={i}
-                      fill={DEVICE_COLORS[i % DEVICE_COLORS.length]}
-                    />
-                  ))}
-                </Pie>
-                <Tooltip
-                  contentStyle={{
-                    background: "#1e2744",
-                    border: "none",
-                    borderRadius: "6px",
-                    color: "#fff",
-                    fontSize: "11px",
-                  }}
-                />
-              </PieChart>
-              <div
-                style={{
-                  position: "absolute",
-                  top: "50%",
-                  left: "50%",
-                  transform: "translate(-50%, -50%)",
-                  textAlign: "center",
-                }}
-              >
-                <div
-                  style={{ fontSize: "13px", fontWeight: 500, color: "#fff" }}
-                >
-                  {totalDeviceUsers.toLocaleString()}
-                </div>
-                <div style={{ fontSize: "10px", color: "#64748b" }}>Users</div>
-              </div>
-            </div>
-            <div style={{ flex: 1 }}>
-              {deviceChartData.map((d, i) => (
-                <div key={i} style={{ marginBottom: "10px" }}>
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      marginBottom: "4px",
-                    }}
-                  >
-                    <span
-                      style={{
-                        fontSize: "12px",
-                        color: "#94a3b8",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "5px",
-                      }}
-                    >
-                      <span
-                        style={{
-                          width: "8px",
-                          height: "8px",
-                          borderRadius: "2px",
-                          background: DEVICE_COLORS[i],
-                          display: "inline-block",
-                        }}
-                      />
-                      {d.name}
-                    </span>
-                    <span style={{ fontSize: "12px", color: "#fff" }}>
-                      {d.value.toLocaleString()}
-                    </span>
-                  </div>
-                  <div
-                    style={{
-                      height: "4px",
-                      background: "#1e2744",
-                      borderRadius: "2px",
-                      overflow: "hidden",
-                    }}
-                  >
-                    <div
-                      style={{
-                        height: "100%",
-                        borderRadius: "2px",
-                        background: DEVICE_COLORS[i],
-                        width: `${Math.round((d.value / totalDeviceUsers) * 100)}%`,
-                      }}
-                    />
-                  </div>
-                </div>
-              ))}
+          <div style={{ marginBottom: "16px" }}>
+            <div style={{ background: "#0f1117", borderRadius: "8px", padding: "12px 20px", border: "0.5px solid #1e2744", display: "inline-block" }}>
+              <div style={{ fontSize: "11px", color: "#64748b", marginBottom: "4px" }}>Total Users</div>
+              <div style={{ fontSize: "20px", fontWeight: 500, color: "#fff" }}>{totalUsers.toLocaleString()}</div>
             </div>
           </div>
           <div style={{ borderTop: "0.5px solid #1e2744", paddingTop: "12px" }}>
@@ -1247,22 +787,6 @@ export default function DashboardAdminComponent() {
                   {growthValue}
                 </span>
               </div>
-              <button
-                style={{
-                  padding: "4px 10px",
-                  borderRadius: "6px",
-                  fontSize: "11px",
-                  cursor: "pointer",
-                  background: "transparent",
-                  border: "0.5px solid #2d3748",
-                  color: "#94a3b8",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "5px",
-                }}
-              >
-                <Download size={11} /> Export
-              </button>
             </div>
           </div>
         </div>
