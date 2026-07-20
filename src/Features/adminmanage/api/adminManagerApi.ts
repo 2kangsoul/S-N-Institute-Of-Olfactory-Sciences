@@ -3,7 +3,7 @@ import apiClient from "../../../config/api"; // Sesuaikan jika path-nya berbeda
 export const fetchAdminsApi = async () => {
   // UPDATE: Endpoint ke /users dengan query parameter standar Express
   const res = await apiClient.get("/users", {
-    params: { role: "admin" },
+    params: { role: "ADMIN" },
   });
   // UPDATE: Mengambil data dari bungkus response Express
   return res.data.data;

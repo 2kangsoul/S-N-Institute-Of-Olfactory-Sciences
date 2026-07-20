@@ -1,7 +1,3 @@
-import axios from "axios";
-
-export const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api",
-  withCredentials: true,
-  headers: { "Content-Type": "application/json" },
-});
+// ponytail: thin re-export — semua caller {api} sekarang share instance yg sama
+// dengan apiClient (termasuk interceptor 401-nya). Jangan bikin instance baru.
+export { default as api } from "../config/api";

@@ -31,7 +31,7 @@ interface Village {
 
 // ─── Admin API helpers ────────────────────────────────────────────────────────
 const fetchAdminsApi = async () => {
-  const res = await apiClient.get("/users", { params: { role: "admin" } });
+  const res = await apiClient.get("/users", { params: { role: "ADMIN" } });
   return res.data.data || [];
 };
 const registerAdminApi = async (payload: any) => {

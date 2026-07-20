@@ -34,7 +34,7 @@ export async function fetchDashboardData(): Promise<DashboardData> {
     safeGet("/analytics/pageviews"),
     safeGet("/orders/financials"),
     safeGet("/users/monthly"),
-    safeGet("/signups/data"),
+    safeGet("/signups/summary"),
   ]);
 
   const [monthlyOverviewRes, monthlySummaryRes, userProfileRes, chartRes] = await Promise.all([
