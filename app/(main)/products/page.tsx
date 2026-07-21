@@ -6,6 +6,7 @@ import Pagination from "@mui/material/Pagination";
 import { useGetProducts } from "@/src/Features/product-snn/product.query";
 import ProductCard from "@/src/Features/product-snn/components/productCard";
 import { useAuthStore } from "@/src/stores/useAuthStore";
+
 function ProductCardSkeleton() {
   return (
     <div className="border border-gray-800 rounded-xl overflow-hidden bg-neutral-950 animate-pulse">
@@ -19,18 +20,37 @@ function ProductCardSkeleton() {
     </div>
   );
 }
+
 export default function ProductsPage() {
   const [page, setPage] = useState(1);
   const [searchInput, setSearchInput] = useState("");
   const [search] = useDebounce(searchInput, 400);
+
+  const [sortBy, setSortBy] = useState<"createdAt" | "price" | "name">("createdAt");
+  const [order, setOrder] = useState<"asc" | "desc">("desc");
+  const [brand, setBrand] = useState("");
+  const [type, setType] = useState("");
+
   const { user } = useAuthStore();
   const isAdmin = user?.role === "ADMIN" || user?.role === "SUPER_ADMIN";
+
   useEffect(() => {
     setPage(1);
-  }, [search]);
-  const { data, isLoading } = useGetProducts({ page, limit: 10, search });
+  }, [search, sortBy, order, brand, type]);
+
+  const { data, isLoading } = useGetProducts({
+    page,
+    limit: 10,
+    search,
+    sortBy,
+    order,
+    brand: brand || undefined,
+    type: type || undefined,
+  });
+
   const meta = data?.meta;
   const products = data?.data ?? [];
+
   return (
     <div className="min-h-screen bg-black text-white">
       <div className="max-w-7xl mx-auto px-6 py-10">
@@ -47,28 +67,67 @@ export default function ProductsPage() {
             </Link>
           )}
         </div>
-        <div className="relative mb-8 max-w-sm">
-          <svg
-            className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M21 21l-4.35-4.35M17 10a7 7 0 11-14 0 7 7 0 0114 0z"
+
+        <div className="flex flex-wrap items-center gap-3 mb-8">
+          <div className="relative max-w-sm flex-1 min-w-[200px]">
+            <svg
+              className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M21 21l-4.35-4.35M17 10a7 7 0 11-14 0 7 7 0 0114 0z"
+              />
+            </svg>
+            <input
+              type="text"
+              placeholder="Search products..."
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              className="w-full border border-gray-700 bg-neutral-950 text-white pl-9 pr-3 py-2.5 rounded-lg text-sm focus:outline-none focus:border-gray-500 transition-colors"
             />
-          </svg>
+          </div>
+
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value as "createdAt" | "price" | "name")}
+            className="border border-gray-700 bg-neutral-950 text-white px-3 py-2.5 rounded-lg text-sm focus:outline-none focus:border-gray-500 transition-colors"
+          >
+            <option value="createdAt">Newest</option>
+            <option value="price">Price</option>
+            <option value="name">Name</option>
+          </select>
+
+          <select
+            value={order}
+            onChange={(e) => setOrder(e.target.value as "asc" | "desc")}
+            className="border border-gray-700 bg-neutral-950 text-white px-3 py-2.5 rounded-lg text-sm focus:outline-none focus:border-gray-500 transition-colors"
+          >
+            <option value="desc">Desc</option>
+            <option value="asc">Asc</option>
+          </select>
+
           <input
             type="text"
-            placeholder="Search products..."
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-            className="w-full border border-gray-700 bg-neutral-950 text-white pl-9 pr-3 py-2.5 rounded-lg text-sm focus:outline-none focus:border-gray-500 transition-colors"
+            placeholder="Filter brand..."
+            value={brand}
+            onChange={(e) => setBrand(e.target.value)}
+            className="border border-gray-700 bg-neutral-950 text-white px-3 py-2.5 rounded-lg text-sm w-40 focus:outline-none focus:border-gray-500 transition-colors"
+          />
+
+          <input
+            type="text"
+            placeholder="Filter type..."
+            value={type}
+            onChange={(e) => setType(e.target.value)}
+            className="border border-gray-700 bg-neutral-950 text-white px-3 py-2.5 rounded-lg text-sm w-40 focus:outline-none focus:border-gray-500 transition-colors"
           />
         </div>
+
         {isLoading ? (
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
             {Array.from({ length: 10 }).map((_, i) => (
