@@ -30,14 +30,12 @@ export default function ProductsPage() {
   const [order, setOrder] = useState<"asc" | "desc">("desc");
   const [brand, setBrand] = useState("");
   const [type, setType] = useState("");
-
   const { user } = useAuthStore();
   const isAdmin = user?.role === "ADMIN" || user?.role === "SUPER_ADMIN";
 
   useEffect(() => {
     setPage(1);
   }, [search, sortBy, order, brand, type]);
-
   const { data, isLoading } = useGetProducts({
     page,
     limit: 10,
@@ -47,10 +45,8 @@ export default function ProductsPage() {
     brand: brand || undefined,
     type: type || undefined,
   });
-
   const meta = data?.meta;
   const products = data?.data ?? [];
-
   return (
     <div className="min-h-screen bg-black text-white">
       <div className="max-w-7xl mx-auto px-6 py-10">
